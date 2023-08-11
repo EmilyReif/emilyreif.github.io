@@ -9,9 +9,9 @@
 body {
   color: #202124;
   margin: 0;
-  font-family: Google Sans;
+  font-family: Google Sans, monospace;
   font-weight: 300;
-  line-height: 1.7em;
+  line-height: 1.7rem;
 }
 
 #projects, #about {
@@ -91,14 +91,14 @@ index-component {
 }
 
 .about-holder a {
-  color: #000;
+  color: inherit;
   text-decoration: underline;
 }
 
 .info {
   width: 100%;
   text-transform: lowercase;
-  letter-spacing: .025em;
+  letter-spacing: .025rem;
   color: #999;
   flex-direction: column;
   justify-content: space-between;
@@ -145,11 +145,15 @@ a:hover {
 
 @media screen and (width <= 1200px) {
   .font-sm {
-    font-size: unset;
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1.5rem;
   }
 
   .content {
     max-width: unset;
+    padding: 45px;
+    line-height: 3.7rem;
   }
 
   .project {
@@ -158,7 +162,7 @@ a:hover {
   }
 
   .img-holder {
-    max-height: unset;
+    height: unset;
     flex: unset;
   }
 

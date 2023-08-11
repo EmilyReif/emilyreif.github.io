@@ -215,7 +215,10 @@ let TreesComponent = class TreesComponent extends (0, _lit.LitElement) {
     <br>
     <br>
     <br>
-    <div class='email font-sm'> ereif[@]google.com </div>
+    <div class='email font-sm'> 
+      ereif[@]google.com 
+      <br>
+      <a href='Reif Resume.pdf' target="_blank"> resume </a> </div>
     ${this.renderExternal()}
     </div>
     `;
@@ -2017,7 +2020,7 @@ const projects = [
         image: "wordcraft.jpg"
     },
     {
-        name: "language interpretability tool",
+        name: "Language interpretability tool",
         description: "open-source platform for visualization and understanding NLP models",
         links: [
             {
@@ -2054,7 +2057,7 @@ const projects = [
         image: "gestalt.png"
     },
     {
-        name: "moodboard search",
+        name: "Moodboard search",
         description: (0, _lit.html)`AI-powered Creative Expression using subjective concepts and embeddings<br><br>Winner of 2023 interaction award`,
         links: [
             {
@@ -2096,6 +2099,17 @@ const projects = [
             }
         ],
         image: "superlative.png"
+    },
+    {
+        name: "Toymaker",
+        description: (0, _lit.html)`Animated short, not AI research. character animation lead / cloth sim lead / shading / modeling. <br><br> (digital animation wasn't great back then... but we did win some awards)`,
+        links: [
+            {
+                link: "https://vimeo.com/242488116",
+                name: "video"
+            }
+        ],
+        image: "toymaker.png"
     }
 ];
 
