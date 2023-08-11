@@ -144,15 +144,16 @@ a:hover {
 }
 
 @media screen and (width <= 1200px) {
-  .font-sm {
-    font-size: 1.5rem;
+  .font-sm, .topbar {
+    font-size: 2rem;
     font-weight: 300;
-    line-height: 1.5rem;
+    line-height: 2rem;
   }
 
   .content {
     max-width: unset;
     padding: 45px;
+    font-size: 2rem;
     line-height: 3.7rem;
   }
 
