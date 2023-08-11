@@ -140,7 +140,7 @@ export const projects: Project[] = [
 
   {
     name: 'moodboard search',
-    description: html`Enabling AI-powered Creative Expression. <br><br>Winner of 2023 interaction award`,
+    description: html`AI-powered Creative Expression using subjective concepts and embeddings<br><br>Winner of 2023 interaction award`,
     links: [
       {link: 'https://awards.ixda.org/projects/mood-board-search-enabling-ai-powered-creative-expression', name: 'site'},
     ],
