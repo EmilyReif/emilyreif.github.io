@@ -1,0 +1,171 @@
+.font-sm {
+  font-size: .75rem;
+}
+
+.font-lg {
+  font-size: 2.25rem;
+}
+
+body {
+  color: #202124;
+  margin: 0;
+  font-family: Google Sans;
+  font-weight: 300;
+  line-height: 1.7em;
+}
+
+#projects, #about {
+  padding-top: 40px;
+}
+
+.email {
+  width: -moz-fit-content;
+  width: fit-content;
+  border-top: 3px solid;
+  padding: 10px 0;
+}
+
+.external {
+  gap: 10px;
+  display: flex;
+}
+
+.external img {
+  width: 20px;
+  height: 20px;
+  filter: grayscale();
+  mix-blend-mode: multiply;
+}
+
+.external img:hover {
+  opacity: .5;
+}
+
+.about-holder {
+  width: 100%;
+  background: #ffc107;
+  justify-content: center;
+  padding-bottom: 60px;
+  display: flex;
+}
+
+h1 {
+  letter-spacing: 0;
+  margin-top: 0;
+  font-weight: 400;
+  line-height: 2.75rem;
+}
+
+index-component {
+  flex-direction: column;
+  align-items: center;
+  display: flex;
+}
+
+.topbar {
+  width: 100%;
+  z-index: 10;
+  box-sizing: border-box;
+  background: #fff;
+  justify-content: center;
+  gap: 30px;
+  padding: 5px;
+  display: flex;
+  position: sticky;
+  top: 0;
+  box-shadow: 0 2px 3px #0000001a;
+}
+
+.nav {
+  cursor: pointer;
+}
+
+.nav a {
+  -webkit-text-decoration: inherit;
+  text-decoration: inherit;
+}
+
+.content {
+  max-width: 520px;
+  padding: 5px;
+}
+
+.about-holder a {
+  color: #000;
+  text-decoration: underline;
+}
+
+.info {
+  width: 100%;
+  text-transform: lowercase;
+  letter-spacing: .025em;
+  color: #999;
+  flex-direction: column;
+  justify-content: space-between;
+  font-weight: 400;
+  line-height: 1rem;
+  display: flex;
+}
+
+.project {
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  padding-bottom: 30px;
+  display: flex;
+}
+
+.img-holder {
+  max-height: 120px;
+  border-radius: 15px;
+  flex: 0 0 300px;
+  overflow: hidden;
+  background: none !important;
+}
+
+.project img {
+  filter: grayscale(50%) brightness(90%);
+  width: 100%;
+  transition: transform .25s;
+}
+
+.project img:hover {
+  transform: scale(1.2);
+}
+
+a {
+  color: #ffa000;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ff5722;
+}
+
+@media screen and (width <= 1200px) {
+  .font-sm {
+    font-size: unset;
+  }
+
+  .content {
+    max-width: unset;
+  }
+
+  .project {
+    flex-direction: column;
+    padding-bottom: 140px;
+  }
+
+  .img-holder {
+    max-height: unset;
+    flex: unset;
+  }
+
+  .external img {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/*# sourceMappingURL=index.aff706fa.css.map */
