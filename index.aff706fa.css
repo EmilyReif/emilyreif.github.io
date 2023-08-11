@@ -86,7 +86,7 @@ index-component {
 }
 
 .content {
-  max-width: 650px;
+  max-width: 600px;
   padding: 5px;
 }
 
@@ -116,11 +116,11 @@ index-component {
 }
 
 .img-holder {
-  height: 200px;
+  height: 150px;
   filter: grayscale(50%) brightness(90%);
   background: #fff;
   border-radius: 15px;
-  flex: 0 0 450px;
+  flex: 0 0 400px;
   overflow: hidden;
 }
 
