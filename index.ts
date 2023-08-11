@@ -80,7 +80,10 @@ export class TreesComponent extends LitElement {
     <br>
     <br>
     <br>
-    <div class='email font-sm'> ereif[@]google.com </div>
+    <div class='email font-sm'> 
+      ereif[@]google.com 
+      <br>
+      <a href='Reif Resume.pdf' target="_blank"> resume </a> </div>
     ${this.renderExternal()}
     </div>
     `;

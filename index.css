@@ -5,11 +5,11 @@
   font-size: 2.25rem;
 }
 body {
-  font-family: "Google Sans";
+  font-family: "Google Sans", monospace;
   margin: 0;
   color: rgb(32, 33, 36);
   font-weight: 300;
-  line-height: 1.7em;
+  line-height: 1.7rem;
 }
 
 #projects,
@@ -83,12 +83,12 @@ index-component {
 
 .content {
   padding: 5px;
-  max-width: 520px;
+  max-width: 600px;
 }
 
 .about-holder a {
   text-decoration: underline;
-  color: black;
+  color: inherit;
 }
 
 .info {
@@ -99,27 +99,26 @@ index-component {
   text-transform: lowercase;
 
   line-height: 1rem;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.025rem;
   font-weight: 400;
   color: #999;
 }
 .project {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 30px;
+  gap: 20px;
+  padding-bottom: 40px;
   padding-top: 10px;
 }
 .img-holder {
-  flex: 0 0 300px;
-  max-height: 120px;
+  flex: 0 0 400px;
+  height: 150px;
   overflow: hidden;
-  background: none !important;
+  background: #fff;
   border-radius: 15px;
+  filter: grayscale(50%) brightness(90%);
 }
 .project img {
-  /* filter: brightness(90%); */
-  filter: grayscale(50%) brightness(90%);
   width: 100%;
   transition: transform 0.25s ease;
 }
@@ -139,18 +138,23 @@ a:hover {
 }
 
 @media screen and (max-width: 1200px) {
-  .font-sm {
-    font-size: unset;
+  .font-sm, .topbar {
+    font-size: 2rem;
+    line-height: 2rem;
+    font-weight: 300;
   }
   .content {
     max-width: unset;
+    line-height: 3.7rem;
+    padding: 45px;
+    font-size: 2rem;
   }
   .project {
     flex-direction: column;
     padding-bottom: 140px;
   }
   .img-holder {
-    max-height: unset;
+    height: unset;
     flex: unset;
   }
   .external img {

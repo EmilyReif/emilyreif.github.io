@@ -111,7 +111,7 @@ export const projects: Project[] = [
 
 
   {
-    name: 'language interpretability tool',
+    name: 'Language interpretability tool',
     description: 'open-source platform for visualization and understanding NLP models',
     links: [
       {link: 'https://pair-code.github.io/lit/', name: 'site'},
@@ -139,7 +139,7 @@ export const projects: Project[] = [
   },
 
   {
-    name: 'moodboard search',
+    name: 'Moodboard search',
     description: html`AI-powered Creative Expression using subjective concepts and embeddings<br><br>Winner of 2023 interaction award`,
     links: [
       {link: 'https://awards.ixda.org/projects/mood-board-search-enabling-ai-powered-creative-expression', name: 'site'},
@@ -170,5 +170,12 @@ export const projects: Project[] = [
     ],
     image: 'superlative.png',
   },
-
+  {
+    name: 'Toymaker',
+    description: html`Animated short, not AI research. character animation lead / cloth sim lead / shading / modeling. <br><br> (digital animation wasn't great back then... but we did win some awards)`,
+    links: [
+      {link: 'https://vimeo.com/242488116', name: 'video'},
+    ],
+    image: 'toymaker.png',
+  },
 ]
