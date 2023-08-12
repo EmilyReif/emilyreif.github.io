@@ -170,12 +170,12 @@ export const projects: Project[] = [
     ],
     image: 'superlative.png',
   },
-  {
-    name: 'Toymaker',
-    description: html`Animated short, not AI research. character animation lead / cloth sim lead / shading / modeling. <br><br> (digital animation wasn't great back then... but we did win some awards)`,
-    links: [
-      {link: 'https://vimeo.com/242488116', name: 'video'},
-    ],
-    image: 'toymaker.png',
-  },
+  // {
+  //   name: 'Toymaker',
+  //   description: html`Animated short, not AI research. character animation lead / cloth sim lead / shading / modeling. <br><br> (digital animation wasn't great back then... but we did win some awards)`,
+  //   links: [
+  //     {link: 'https://vimeo.com/242488116', name: 'video'},
+  //   ],
+  //   image: 'toymaker.png',
+  // },
 ]
