@@ -15,7 +15,7 @@ export type Project = {
 export const projects: Project[] = [
   {
     name: 'PALM + PALM2: RAI data analysis',
-    description: 'RAI analysis on PaLM and PaLM2 Pre-training Data',
+    description: 'Responsible AI analysis on PaLM and PaLM2 pre-training data',
     links: [
       { link: 'https://arxiv.org/abs/2204.02311', name: 'PaLM paper' },
       { link: 'https://arxiv.org/abs/2305.10403', name: 'PaLM2 technical report' }],
@@ -50,7 +50,7 @@ export const projects: Project[] = [
   },
   {
     name: 'Linguistic Lens',
-    description: 'interactive visualization tool for understanding grammatical diversity in LLM-generated text',
+    description: 'Interactive visualization tool for understanding grammatical diversity in LLM-generated text',
     links: [
       { link: 'https://arxiv.org/pdf/2305.11364.pdf', name: 'paper' },
       { link: 'https://storage.googleapis.com/data-synth-trees/demo/index.html', name: 'Tool' },
@@ -60,7 +60,7 @@ export const projects: Project[] = [
   },
   {
     name: 'Know Your Data',
-    description: html`tool for understanding large datasets using data augmentation and visualization <br><br> (i led the text version, which was tragically never open sourced)`,
+    description: html`Tool for understanding large datasets using data augmentation and visualization <br><br> (I led the text version, which was tragically never open sourced)`,
     links: [{ link: 'https://knowyourdata.withgoogle.com/', name: 'KnowYourData' }],
     image: 'knowyourdata.png',
   },
@@ -89,7 +89,7 @@ export const projects: Project[] = [
 
   {
     name: 'Embedding projector',
-    description: 'A tool for interactive Visualization and Interpretation of Embeddings',
+    description: 'A tool for interactive visualization and interpretation of embeddings',
     links: [
       { link: 'https://arxiv.org/abs/1611.05469', name: 'paper' },
       { link: 'https://projector.tensorflow.org/', name: 'Tool' },
@@ -101,7 +101,7 @@ export const projects: Project[] = [
 
   {
     name: 'Wordcraft writers workshop',
-    description: 'LLM-powered writing assistant for a workshop with professional writers including Ken Lui and Robin Sloan. illustrated with a generative image model',
+    description: 'LLM-powered writing assistant for a workshop with professional writers including Ken Lui and Robin Sloan. Illustrated with a generative image model',
     links: [
       { link: 'https://wordcraft-writers-workshop.appspot.com/', name: 'stories' },
     ],
@@ -112,7 +112,7 @@ export const projects: Project[] = [
 
   {
     name: 'Language interpretability tool',
-    description: 'open-source platform for visualization and understanding NLP models',
+    description: 'Open-source platform for visualizing and understanding language models',
     links: [
       {link: 'https://pair-code.github.io/lit/', name: 'site'},
       {link: 'https://arxiv.org/abs/2008.05122', name: 'paper' },
@@ -122,7 +122,7 @@ export const projects: Project[] = [
 
   {
     name: 'Probing pretraining data',
-    description: 'Probing Heterogeneous Pretraining Datasets with Small Curated Datasets',
+    description: 'Probing heterogeneous pretraining datasets with small curated datasets',
     links: [
       {link: 'https://gyauney.github.io/papers/probing-heterogeneous-datasets_poster.pdf', name: 'poster'},
     ],
@@ -131,7 +131,7 @@ export const projects: Project[] = [
 
   {
     name: 'NNs and gestalt',
-    description: 'Neural Networks Trained on Natural Scenes Exhibit Gestalt Closure',
+    description: 'Neural networks trained on natural scenes exhibit gestalt closure',
     links: [
       {link: 'https://link.springer.com/article/10.1007/s42113-021-00100-7', name: 'paper'},
     ],
@@ -140,7 +140,7 @@ export const projects: Project[] = [
 
   {
     name: 'Moodboard search',
-    description: html`AI-powered Creative Expression using subjective concepts and embeddings<br><br>Winner of 2023 interaction award`,
+    description: html`AI-powered creative expression using subjective concepts and embeddings<br><br>Winner of 2023 interaction award`,
     links: [
       {link: 'https://awards.ixda.org/projects/mood-board-search-enabling-ai-powered-creative-expression', name: 'site'},
     ],
@@ -164,7 +164,7 @@ export const projects: Project[] = [
   },
   {
     name: 'Superlative Instruments',
-    description: 'synthesizers, Not AI research. implemented the website and helped out with company ops',
+    description: 'synthesizers, not AI research. implemented the website, helped with company ops, etc',
     links: [
       {link: 'https://playsuperlative.com/', name: 'site'},
     ],
