@@ -1875,7 +1875,7 @@ var _lit = require("lit");
 const projects = [
     {
         name: "PALM + PALM2: RAI data analysis",
-        description: "RAI analysis on PaLM and PaLM2 Pre-training Data",
+        description: "Responsible AI analysis on PaLM and PaLM2 pre-training data",
         links: [
             {
                 link: "https://arxiv.org/abs/2204.02311",
@@ -1935,7 +1935,7 @@ const projects = [
     },
     {
         name: "Linguistic Lens",
-        description: "interactive visualization tool for understanding grammatical diversity in LLM-generated text",
+        description: "Interactive visualization tool for understanding grammatical diversity in LLM-generated text",
         links: [
             {
                 link: "https://arxiv.org/pdf/2305.11364.pdf",
@@ -1954,7 +1954,7 @@ const projects = [
     },
     {
         name: "Know Your Data",
-        description: (0, _lit.html)`tool for understanding large datasets using data augmentation and visualization <br><br> (i led the text version, which was tragically never open sourced)`,
+        description: (0, _lit.html)`Tool for understanding large datasets using data augmentation and visualization <br><br> (I led the text version, which was tragically never open sourced)`,
         links: [
             {
                 link: "https://knowyourdata.withgoogle.com/",
@@ -1995,7 +1995,7 @@ const projects = [
     },
     {
         name: "Embedding projector",
-        description: "A tool for interactive Visualization and Interpretation of Embeddings",
+        description: "A tool for interactive visualization and interpretation of embeddings",
         links: [
             {
                 link: "https://arxiv.org/abs/1611.05469",
@@ -2010,7 +2010,7 @@ const projects = [
     },
     {
         name: "Wordcraft writers workshop",
-        description: "LLM-powered writing assistant for a workshop with professional writers including Ken Lui and Robin Sloan. illustrated with a generative image model",
+        description: "LLM-powered writing assistant for a workshop with professional writers including Ken Lui and Robin Sloan. Illustrated with a generative image model",
         links: [
             {
                 link: "https://wordcraft-writers-workshop.appspot.com/",
@@ -2021,7 +2021,7 @@ const projects = [
     },
     {
         name: "Language interpretability tool",
-        description: "open-source platform for visualization and understanding NLP models",
+        description: "Open-source platform for visualizing and understanding language models",
         links: [
             {
                 link: "https://pair-code.github.io/lit/",
@@ -2036,7 +2036,7 @@ const projects = [
     },
     {
         name: "Probing pretraining data",
-        description: "Probing Heterogeneous Pretraining Datasets with Small Curated Datasets",
+        description: "Probing heterogeneous pretraining datasets with small curated datasets",
         links: [
             {
                 link: "https://gyauney.github.io/papers/probing-heterogeneous-datasets_poster.pdf",
@@ -2047,7 +2047,7 @@ const projects = [
     },
     {
         name: "NNs and gestalt",
-        description: "Neural Networks Trained on Natural Scenes Exhibit Gestalt Closure",
+        description: "Neural networks trained on natural scenes exhibit gestalt closure",
         links: [
             {
                 link: "https://link.springer.com/article/10.1007/s42113-021-00100-7",
@@ -2058,7 +2058,7 @@ const projects = [
     },
     {
         name: "Moodboard search",
-        description: (0, _lit.html)`AI-powered Creative Expression using subjective concepts and embeddings<br><br>Winner of 2023 interaction award`,
+        description: (0, _lit.html)`AI-powered creative expression using subjective concepts and embeddings<br><br>Winner of 2023 interaction award`,
         links: [
             {
                 link: "https://awards.ixda.org/projects/mood-board-search-enabling-ai-powered-creative-expression",
@@ -2068,7 +2068,7 @@ const projects = [
         image: "cavcam.png"
     },
     {
-        name: "Reverse Rorschach",
+        name: "Reverse rorschach",
         description: (0, _lit.html)`Installation by artist Shahryar Nashat using text-to-image generation model. <br><br>helped with intial brainstorming + proof of concepts, and got the technical pieces working`,
         links: [
             {
@@ -2091,7 +2091,7 @@ const projects = [
     },
     {
         name: "Superlative Instruments",
-        description: "synthesizers, Not AI research. implemented the website and helped out with company ops",
+        description: "synthesizers, not AI research. implemented the website, helped with company ops, etc",
         links: [
             {
                 link: "https://playsuperlative.com/",
@@ -2099,17 +2099,6 @@ const projects = [
             }
         ],
         image: "superlative.png"
-    },
-    {
-        name: "Toymaker",
-        description: (0, _lit.html)`Animated short, not AI research. character animation lead / cloth sim lead / shading / modeling. <br><br> (digital animation wasn't great back then... but we did win some awards)`,
-        links: [
-            {
-                link: "https://vimeo.com/242488116",
-                name: "video"
-            }
-        ],
-        image: "toymaker.png"
     }
 ];
 
