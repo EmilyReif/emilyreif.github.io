@@ -96,13 +96,16 @@ index-component {
   flex-direction: column;
   justify-content: space-between;
   width: 100%;
-  text-transform: lowercase;
-
   line-height: 1rem;
   letter-spacing: 0.025rem;
   font-weight: 400;
   color: #999;
 }
+
+a {
+  text-transform: uppercase;
+}
+
 .project {
   display: flex;
   justify-content: space-between;

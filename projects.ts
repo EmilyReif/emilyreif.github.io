@@ -147,7 +147,7 @@ export const projects: Project[] = [
     image: 'cavcam.png',
   },
   {
-    name: 'Reverse Rorschach',
+    name: 'Reverse rorschach',
     description: html`Installation by artist Shahryar Nashat using text-to-image generation model. <br><br>helped with intial brainstorming + proof of concepts, and got the technical pieces working`,
     links: [
       {link: 'https://www.luma.org/en/arles/our-program/event/shahryar-nashat-reverse-rorschach-826693ae-da2f-45f7-a77b-cfee4110ff27.html', name: 'site'},
