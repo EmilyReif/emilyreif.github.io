@@ -120,7 +120,7 @@ a {
 
 .img-holder {
   height: 150px;
-  filter: grayscale(50%) brightness(90%);
+  filter: brightness(95%);
   background: #fff;
   border-radius: 15px;
   flex: 0 0 400px;
@@ -146,7 +146,7 @@ a:hover {
   color: #ff5722;
 }
 
-@media screen and (width <= 1200px) {
+@media screen and (width <= 600px) {
   .font-sm, .topbar {
     font-size: 2rem;
     font-weight: 300;
