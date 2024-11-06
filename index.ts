@@ -63,7 +63,12 @@ export class TreesComponent extends LitElement {
   private renderAbout() {
     return html`
     <div>
-    I'm currently a senior software engineer on Google's <a href=https://pair.withgoogle.com/ target="_blank"> People + AI Research</a> team, trying to understand why models (mostly LLMs) do what they do
+    I'm currently a PhD student at the University of Washington, advised by <a href=https://nasmith.github.io/ target="_blank"> Noah Smith</a> and <a href=https://homes.cs.washington.edu/~jheer/ target="_blank"> Jeff Heer</a>. 
+    I'm also a senior software engineer on Google DeepMind's <a href=https://pair.withgoogle.com/ target="_blank"> People + AI Research</a> team. 
+    <br>
+    <br>
+
+    I want to understand why machine learning models (mostly language models) do what they do.
     
     <br>
     <br>
@@ -71,12 +76,12 @@ export class TreesComponent extends LitElement {
     <br>
     <br>
 
-    I'm especially interested in using visualization to understand pretraining data, and evaluating LLMs via their generated data
+    I'm especially interested in using visualization to understand pretraining/finetuning/evaluation data, and how those data curation choices impact the model.
 
     <br>
     <br>
 
-    I also create new interfaces to explore the boundaries of these models’ capabilities, for a wide range of users from pathologists, to creative writers, to visual artists
+    I also create new interfaces to explore the boundaries of these models’ capabilities, for a wide range of users from pathologists, to creative writers, to visual artists.
     <br>
     <br>
     <br>
@@ -92,7 +97,7 @@ export class TreesComponent extends LitElement {
 
   private link(name: string, link: string) {
     // return html`<a href=${link}>${name}[↗]</a>`
-    return html`<a href=${link} target="_blank">${name}</a>`
+    return html`<a class='upper' href=${link} target="_blank">${name}</a>`
   }
 
   private renderProjects() {

@@ -23,13 +23,28 @@ export const projects: Project[] = [
     image: 'topics.png',
   },
   {
-    name: 'Visualizing and understanding the geometry of BERT',
-    description: 'How are syntax and semantics are encoded in transformers?',
+    name: 'A pretrainer\'s guide to training data',
+    description: 'What happens when you systematically vary time, quality, toxicity, and domain of pre-training data for LLMs?',
     links: [
-      { link: 'https://proceedings.neurips.cc/paper_files/paper/2019/hash/159c1ffe5b61b41b3c4d8f4c2150f6c4-Abstract.html', name: 'Paper' },
-      { link: 'https://pair-code.github.io/interpretability/context-atlas/blogpost/', name: 'tool' },
-      {link: 'https://github.com/PAIR-code/interpretability/tree/master/context-atlas', name: 'code'}
-    ], image: 'bert.png',
+      { link: 'https://aclanthology.org/2024.naacl-long.179/', name: 'paper' }],
+
+    image: 'pretraining.jpg',
+  },
+  {
+    name: 'Automatic Histograms',
+    description: 'Leveraging language models for text dataset exploration by creating entity-based features on-the-fly.',
+    links: [
+      { link: 'https://dl.acm.org/doi/pdf/10.1145/3613905.3650798', name: 'paper' }],
+
+    image: 'ah.png',
+  },
+  {
+    name: 'LLM Comparator',
+    description: 'Interactive side-by-side comparison of llms',
+    links: [
+      { link: 'https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10670495', name: 'paper' }],
+
+    image: 'llm_comp.png',
   },
   {
     name: 'A gentle introduction to graph neural networks',
@@ -60,20 +75,19 @@ export const projects: Project[] = [
   },
   {
     name: 'Know Your Data',
-    description: html`Tool for understanding large datasets using data augmentation and visualization <br><br> (I led the text version, which was tragically never open sourced)`,
+    description: html`Tool for understanding large datasets using data augmentation and visualization <br><br> (I led the text version, which was never externalized)`,
     links: [{ link: 'https://knowyourdata.withgoogle.com/', name: 'KnowYourData' }],
     image: 'knowyourdata.png',
   },
   {
-    name: 'A pretrainer\'s guide to training data',
-    description: 'What happens when you sytematically vary time, quality, toxicity, and domain of pre-training data for LLMs?',
+    name: 'Visualizing and understanding the geometry of BERT',
+    description: 'How are syntax and semantics are encoded in transformers?',
     links: [
-      { link: 'https://arxiv.org/abs/2305.13169', name: 'paper' }],
-
-    image: 'pretraining.jpg',
+      { link: 'https://proceedings.neurips.cc/paper_files/paper/2019/hash/159c1ffe5b61b41b3c4d8f4c2150f6c4-Abstract.html', name: 'Paper' },
+      { link: 'https://pair-code.github.io/interpretability/context-atlas/blogpost/', name: 'tool' },
+      {link: 'https://github.com/PAIR-code/interpretability/tree/master/context-atlas', name: 'code'}
+    ], image: 'bert.png',
   },
-
-
   {
     name: 'Waterfall of meaning',
     description: 'Art piece exploring the internals of LMs. Shown with the Barbican AI - More Than Human exhibit in  London, China, and Spain',
@@ -164,7 +178,7 @@ export const projects: Project[] = [
   },
   {
     name: 'Superlative Instruments',
-    description: 'synthesizers, not AI research. implemented the website, helped with company ops, etc',
+    description: 'Synthesizers, not AI research. implemented the website, helped with company ops, etc',
     links: [
       {link: 'https://playsuperlative.com/', name: 'site'},
     ],
