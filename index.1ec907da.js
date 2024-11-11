@@ -198,7 +198,12 @@ let TreesComponent = class TreesComponent extends (0, _lit.LitElement) {
     renderAbout() {
         return (0, _lit.html)`
     <div>
-    I'm currently a senior software engineer on Google's <a href=https://pair.withgoogle.com/ target="_blank"> People + AI Research</a> team, trying to understand why models (mostly LLMs) do what they do
+    I'm currently a PhD student at the University of Washington, advised by <a href=https://nasmith.github.io/ target="_blank"> Noah Smith</a> and <a href=https://homes.cs.washington.edu/~jheer/ target="_blank"> Jeff Heer</a>. 
+    I'm also a senior software engineer on Google DeepMind's <a href=https://pair.withgoogle.com/ target="_blank"> People + AI Research</a> team. 
+    <br>
+    <br>
+
+    I want to understand why machine learning models (mostly language models) do what they do.
     
     <br>
     <br>
@@ -206,12 +211,12 @@ let TreesComponent = class TreesComponent extends (0, _lit.LitElement) {
     <br>
     <br>
 
-    I'm especially interested in using visualization to understand pretraining data, and evaluating LLMs via their generated data
+    I'm especially interested in using visualization to understand pretraining/finetuning/evaluation data, and how those data curation choices impact the model.
 
     <br>
     <br>
 
-    I also create new interfaces to explore the boundaries of these models’ capabilities, for a wide range of users from pathologists, to creative writers, to visual artists
+    I also create new interfaces to explore the boundaries of these models’ capabilities, for a wide range of users from pathologists, to creative writers, to visual artists.
     <br>
     <br>
     <br>
@@ -225,7 +230,7 @@ let TreesComponent = class TreesComponent extends (0, _lit.LitElement) {
     }
     link(name, link) {
         // return html`<a href=${link}>${name}[↗]</a>`
-        return (0, _lit.html)`<a href=${link} target="_blank">${name}</a>`;
+        return (0, _lit.html)`<a class='upper' href=${link} target="_blank">${name}</a>`;
     }
     renderProjects() {
         return (0, _repeat.repeat)((0, _projects.projects), (project)=>this.renderProject(project));
@@ -251,7 +256,7 @@ TreesComponent = (0, _tsDecorateMjsDefault.default)([
     (0, _decorators.customElement)("index-component")
 ], TreesComponent);
 
-},{"@swc/helpers/src/_ts_decorate.mjs":"6yEaS","lit":"4antt","lit/decorators":"bCPKi","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","lit/directives/repeat":"71kf4","./projects":"9Cqo4"}],"6yEaS":[function(require,module,exports) {
+},{"@swc/helpers/src/_ts_decorate.mjs":"6yEaS","lit":"4antt","lit/decorators":"bCPKi","lit/directives/repeat":"71kf4","./projects":"9Cqo4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6yEaS":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>(0, _tslib.__decorate));
@@ -1889,23 +1894,37 @@ const projects = [
         image: "topics.png"
     },
     {
-        name: "Visualizing and understanding the geometry of BERT",
-        description: "How are syntax and semantics are encoded in transformers?",
+        name: "A pretrainer's guide to training data",
+        description: "What happens when you systematically vary time, quality, toxicity, and domain of pre-training data for LLMs?",
         links: [
             {
-                link: "https://proceedings.neurips.cc/paper_files/paper/2019/hash/159c1ffe5b61b41b3c4d8f4c2150f6c4-Abstract.html",
-                name: "Paper"
-            },
-            {
-                link: "https://pair-code.github.io/interpretability/context-atlas/blogpost/",
-                name: "tool"
-            },
-            {
-                link: "https://github.com/PAIR-code/interpretability/tree/master/context-atlas",
-                name: "code"
+                link: "https://aclanthology.org/2024.naacl-long.179/",
+                name: "paper"
             }
         ],
-        image: "bert.png"
+        image: "pretraining.jpg"
+    },
+    {
+        name: "Automatic Histograms",
+        description: "Leveraging language models for text dataset exploration by creating entity-based features on-the-fly.",
+        links: [
+            {
+                link: "https://dl.acm.org/doi/pdf/10.1145/3613905.3650798",
+                name: "paper"
+            }
+        ],
+        image: "ah.png"
+    },
+    {
+        name: "LLM Comparator",
+        description: "Interactive side-by-side comparison of llms",
+        links: [
+            {
+                link: "https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10670495",
+                name: "paper"
+            }
+        ],
+        image: "llm_comp.png"
     },
     {
         name: "A gentle introduction to graph neural networks",
@@ -1954,7 +1973,7 @@ const projects = [
     },
     {
         name: "Know Your Data",
-        description: (0, _lit.html)`Tool for understanding large datasets using data augmentation and visualization <br><br> (I led the text version, which was tragically never open sourced)`,
+        description: (0, _lit.html)`Tool for understanding large datasets using data augmentation and visualization <br><br> (I led the text version, which was never externalized)`,
         links: [
             {
                 link: "https://knowyourdata.withgoogle.com/",
@@ -1964,15 +1983,23 @@ const projects = [
         image: "knowyourdata.png"
     },
     {
-        name: "A pretrainer's guide to training data",
-        description: "What happens when you sytematically vary time, quality, toxicity, and domain of pre-training data for LLMs?",
+        name: "Visualizing and understanding the geometry of BERT",
+        description: "How are syntax and semantics are encoded in transformers?",
         links: [
             {
-                link: "https://arxiv.org/abs/2305.13169",
-                name: "paper"
+                link: "https://proceedings.neurips.cc/paper_files/paper/2019/hash/159c1ffe5b61b41b3c4d8f4c2150f6c4-Abstract.html",
+                name: "Paper"
+            },
+            {
+                link: "https://pair-code.github.io/interpretability/context-atlas/blogpost/",
+                name: "tool"
+            },
+            {
+                link: "https://github.com/PAIR-code/interpretability/tree/master/context-atlas",
+                name: "code"
             }
         ],
-        image: "pretraining.jpg"
+        image: "bert.png"
     },
     {
         name: "Waterfall of meaning",
@@ -2091,7 +2118,7 @@ const projects = [
     },
     {
         name: "Superlative Instruments",
-        description: "synthesizers, not AI research. implemented the website, helped with company ops, etc",
+        description: "Synthesizers, not AI research. implemented the website, helped with company ops, etc",
         links: [
             {
                 link: "https://playsuperlative.com/",
@@ -2102,6 +2129,6 @@ const projects = [
     }
 ];
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","lit":"4antt"}]},["1jwFz"], "1jwFz", "parcelRequirebbef")
+},{"lit":"4antt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["1jwFz"], "1jwFz", "parcelRequirebbef")
 
 //# sourceMappingURL=index.1ec907da.js.map
