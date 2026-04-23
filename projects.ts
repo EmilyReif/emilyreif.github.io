@@ -10,7 +10,9 @@ export type Project = {
   image?: string,
   links: Link[],
   dates?: string,
-  role?: string
+  role?: string,
+  /** When true, excluded from the main Projects list (still in data for exports / tooling). */
+  hide_in_main_list?: boolean,
 }
 export const projects: Project[] = [
   {
@@ -191,6 +193,119 @@ export const projects: Project[] = [
     ],
     image: 'superlative.png',
   },
+
+  {
+    name: 'Evaluating attribution for graph neural networks',
+    description: 'Quantitative evaluation of attribution methods for GNNs with synthetic ground truth',
+    links: [
+      { link: 'https://proceedings.neurips.cc/paper/2020/hash/417fbbf2e9d5a28a855a11894b2e795a-Abstract.html', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'An interpretability illusion for BERT',
+    description: 'Phenomena that can make BERT-based interpretability tools appear more reliable than they are',
+    links: [
+      { link: 'https://arxiv.org/abs/2104.07143', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'Who\'s asking? User personas and the mechanics of latent misalignment',
+    description: 'How implicit user personas affect model behavior and safety',
+    links: [
+      { link: 'https://arxiv.org/abs/2406.12094', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'Understanding the dataset practitioners behind large language model development',
+    description: 'Interviews and analysis of data practitioners in LLM development (CHI 2024 extended abstract)',
+    links: [
+      { link: 'https://arxiv.org/abs/2402.16611', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'Data similarity is not enough to explain language model performance',
+    description: 'Similarity to pretraining data often does not track downstream task accuracy',
+    links: [
+      { link: 'https://aclanthology.org/2023.emnlp-main.695/', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'The evolution of LLM adoption in industry data curation practices',
+    description: 'Survey, interviews, and user studies on how data teams adopt LLMs in curation workflows',
+    links: [
+      { link: 'https://arxiv.org/abs/2412.16089', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'LLM adoption in data curation workflows: industry practices and insights',
+    description: 'CHI 2025 extended abstract; related follow-on to the industry adoption work',
+    links: [
+      { link: 'https://researchr.org/publication/QianLRSHCWCTK25', name: 'publication' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'SoUnD: analyzing social representation in unstructured data',
+    description: 'Framework for RAI analysis of who and what is represented in foundation model training data (AIES 2024)',
+    links: [
+      { link: 'https://arxiv.org/abs/2311.17259', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'Developing a conceptual framework for analyzing people in unstructured data',
+    description: 'Workshop version (SoLaR / NeurIPS workshops 2023) of ideas later expanded in SoUnD',
+    links: [
+      { link: 'https://openreview.net/forum?id=QSPHfgw5fp', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'RDoFlow: automatically assessing under-specified statistical analyses in HCI',
+    description: 'IUI 2026; not yet on arXiv with this title in public search',
+    links: [
+      { link: 'https://iui.acm.org/2026/accepted-papers/', name: 'venue' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'The case for a single model that can both generate continuations and fill-in-the-blank',
+    description: 'Pretraining and fine-tuning for both continuation and fit-b (NAACL 2022 findings)',
+    links: [
+      { link: 'https://aclanthology.org/2022.findings-naacl.185/', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'Bandit-based solar panel control',
+    description: 'Bandit algorithms learn panel orientation to harvest more energy (AAAI 2018; builds on RLDM / EnviroInfo drafts)',
+    links: [
+      { link: 'https://aaai.org/papers/11415-bandit-based-solar-panel-control', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'Improving solar panel efficiency using reinforcement learning',
+    description: 'Earlier RLDM 2017 version of the solar tracking line',
+    links: [
+      { link: 'http://cs.brown.edu/~dabel/papers/solarl.pdf', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
+  {
+    name: 'Toward improving solar panel efficiency using reinforcement learning',
+    description: 'EnviroInfo 2017 version of the solar tracking work',
+    links: [
+      { link: 'http://cs.brown.edu/~dabel/papers/solarl_enviro_info.pdf', name: 'paper' },
+    ],
+    hide_in_main_list: true,
+  },
   // {
   //   name: 'Toymaker',
   //   description: html`Animated short, not AI research. character animation lead / cloth sim lead / shading / modeling. <br><br> (digital animation wasn't great back then... but we did win some awards)`,
@@ -200,3 +315,7 @@ export const projects: Project[] = [
   //   image: 'toymaker.png',
   // },
 ]
+
+export const mainProjects: Project[] = projects.filter(
+  p => !p.hide_in_main_list
+);

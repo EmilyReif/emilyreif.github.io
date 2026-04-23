@@ -6,7 +6,7 @@ import { customElement } from 'lit/decorators';
 import { classMap } from 'lit/directives/class-map';
 import { repeat } from 'lit/directives/repeat';
 import { styleMap } from 'lit/directives/style-map';
-import { projects, Project } from './projects';
+import { mainProjects, Project } from './projects';
 
 /**
  * Component for spreadsheet duplicates.
@@ -101,7 +101,7 @@ export class TreesComponent extends LitElement {
   }
 
   private renderProjects() {
-   return repeat(projects, project => this.renderProject(project));
+   return repeat(mainProjects, project => this.renderProject(project));
   }
   private renderProject(project: Project) {
     const links = project.links.map(link => html`<div>${this.link(link.name, link.link)}</div>`);
