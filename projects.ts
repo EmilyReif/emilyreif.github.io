@@ -14,6 +14,16 @@ export type Project = {
 }
 export const projects: Project[] = [
   {
+    name: 'Visualizing Distributions of Language Model Generations',
+    description: 'Visualizations to explore, compare, and reason about distributions of language model outputs for a single input.',
+    links: [
+      { link: 'https://arxiv.org/pdf/2604.18724', name: 'paper' },
+      { link: 'https://emilyreif.com/llm-consistency-vis/interactive_article', name: 'article' },
+      { link: 'https://emilyreif.com/llm-consistency-vis/', name: 'demo' },
+    ],
+    image: 'llm_consistency_vis.png',
+  },
+  {
     name: 'PALM + PALM2: RAI data analysis',
     description: 'Responsible AI analysis on PaLM and PaLM2 pre-training data',
     links: [
@@ -31,20 +41,13 @@ export const projects: Project[] = [
     image: 'pretraining.jpg',
   },
   {
-    name: 'Automatic Histograms',
-    description: 'Leveraging language models for text dataset exploration by creating entity-based features on-the-fly.',
+    name: 'A recipe for arbitrary text style transfer with LLMs',
+    description: 'Using LLMs for arbitrary text style transfer, with a natural language interface',
     links: [
-      { link: 'https://dl.acm.org/doi/pdf/10.1145/3613905.3650798', name: 'paper' }],
-
-    image: 'ah.png',
-  },
-  {
-    name: 'LLM Comparator',
-    description: 'Interactive side-by-side comparison of llms',
-    links: [
-      { link: 'https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10670495', name: 'paper' }],
-
-    image: 'llm_comp.png',
+      {link: 'https://arxiv.org/abs/2109.03910', name: 'paper'},
+      {link: 'https://storage.googleapis.com/style-transfer-paper-123/index.html', name: 'styled text' },
+    ],
+    image: 'style_transfer.png',
   },
   {
     name: 'A gentle introduction to graph neural networks',
@@ -55,14 +58,14 @@ export const projects: Project[] = [
     image: 'gnn.png',
   },
   {
-    name: 'A recipe for arbitrary text style transfer with LLMs',
-    description: 'Using LLMs for arbitrary text style transfer, with a natural language interface',
+    name: 'LLM Comparator',
+    description: 'Interactive side-by-side comparison of llm-generated datasets',
     links: [
-      {link: 'https://arxiv.org/abs/2109.03910', name: 'paper'},
-      {link: 'https://storage.googleapis.com/style-transfer-paper-123/index.html', name: 'styled text' },
-    ],
-    image: 'style_transfer.png',
+      { link: 'https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10670495', name: 'paper' }],
+
+    image: 'llm_comp.png',
   },
+
   {
     name: 'Linguistic Lens',
     description: 'Interactive visualization tool for understanding grammatical diversity in LLM-generated text',
@@ -96,11 +99,8 @@ export const projects: Project[] = [
       {link: 'https://storage.googleapis.com/waterfall-of-meaning/demo/standalone.html', name: 'online piece' },
       {link: 'https://github.com/PAIR-code/waterfall-of-meaning', name: 'code' },
     ],
-
     image: 'waterfall_of_meaning.png',
   },
-
-
   {
     name: 'Embedding projector',
     description: 'A tool for interactive visualization and interpretation of embeddings',
@@ -111,13 +111,20 @@ export const projects: Project[] = [
 
     image: 'embeddingprojector.png',
   },
+  {
+    name: 'Automatic Histograms',
+    description: 'Leveraging language models for text dataset exploration by creating entity-based features on-the-fly.',
+    links: [
+      { link: 'https://dl.acm.org/doi/pdf/10.1145/3613905.3650798', name: 'paper' }],
 
-
+    image: 'ah.png',
+  },
   {
     name: 'Wordcraft writers workshop',
     description: 'LLM-powered writing assistant for a workshop with professional writers including Ken Lui and Robin Sloan. Illustrated with a generative image model',
     links: [
       { link: 'https://wordcraft-writers-workshop.appspot.com/', name: 'stories' },
+      { link: 'https://arxiv.org/abs/2107.07430', name: 'paper' },
     ],
 
     image: 'wordcraft.jpg',
@@ -156,7 +163,7 @@ export const projects: Project[] = [
     name: 'Moodboard search',
     description: html`AI-powered creative expression using subjective concepts and embeddings<br><br>Winner of 2023 interaction award`,
     links: [
-      {link: 'https://awards.ixda.org/projects/mood-board-search-enabling-ai-powered-creative-expression', name: 'site'},
+      {link: 'https://awards.ixda.org/projects/mood-board-search-enabling-ai-powered-creative-expression.html', name: 'site'},
     ],
     image: 'cavcam.png',
   },

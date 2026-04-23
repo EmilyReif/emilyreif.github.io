@@ -64,7 +64,7 @@ export class TreesComponent extends LitElement {
     return html`
     <div>
     I'm currently a PhD student at the University of Washington, advised by <a href=https://nasmith.github.io/ target="_blank"> Noah Smith</a> and <a href=https://homes.cs.washington.edu/~jheer/ target="_blank"> Jeff Heer</a>. 
-    I'm also a senior software engineer on Google DeepMind's <a href=https://pair.withgoogle.com/ target="_blank"> People + AI Research</a> team. 
+    I'm also a research scientist on Google DeepMind's <a href=https://pair.withgoogle.com/ target="_blank"> People + AI Research</a> team. 
     <br>
     <br>
 
@@ -86,7 +86,7 @@ export class TreesComponent extends LitElement {
     <br>
     <br>
     <div class='email font-sm'> 
-      ereif[@]google.com 
+      ereif[@]google.com // emreif[@]cs.washington.edu
       <br>
       <a href='Reif Resume.pdf' target="_blank"> resume </a> </div>
     ${this.renderExternal()}
@@ -112,7 +112,7 @@ export class TreesComponent extends LitElement {
 
       <div class='info font-sm'>
         <div>${project.description}</div>
-        <div>
+        <div class='project-links'>
           ${links}
         </div>
       </div>
