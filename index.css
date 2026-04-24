@@ -39,7 +39,7 @@ body {
 }
 
 .about-holder {
-  background: #ffc96f;
+  background: #7289a878;
   width: 100%;
   justify-content: center;
   display: flex;
@@ -131,13 +131,13 @@ index-component {
 }
 
 a {
-  color: #ffa000;
+  color: slategray;
   text-decoration: none;
   line-height: 1.5;
 }
 
 a:hover {
-  color: #ff5722;
+  color: #ffa000;
 }
 
 @media screen and (max-width: 1200px) {

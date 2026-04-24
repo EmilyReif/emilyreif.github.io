@@ -13,17 +13,6 @@ export const PROJECT_TAG_ORDER = [
 
 export type ProjectTag = (typeof PROJECT_TAG_ORDER)[number];
 
-export const PROJECT_TAG_LABELS: Record<ProjectTag, string> = {
-  llms_and_data: "LLMs and dataaaa",
-  people_and_data: "People and data",
-  pretraining_data: "Pretraining data",
-  visualization: "Visualization",
-  interpretability: "Interpretability",
-  art: "Art",
-  real_people_using_ai: "Real people using AI",
-  not_ai: "Not AI",
-};
-
 const tagOrderIndex = new Map(
   PROJECT_TAG_ORDER.map((t, i) => [t, i] as const)
 );
@@ -45,6 +34,7 @@ export type Project = {
   links: Link[];
   dates?: string;
   role?: string;
+  venue?: string;
   tags: ProjectTag[];
   /** When true, excluded from the main Projects list (still in data for exports / tooling). */
   hide_in_main_list?: boolean;
@@ -86,7 +76,7 @@ export const PROJECT_TIMELINE_METADATA: Record<string, ProjectTimelineMetadata> 
   "moodboard search": { year: 2023, month: 1, citations: 10, aliases: ["mood board search enabling ai powered creative expression"] },
   "probing pretraining data": { year: 2024, month: 7, citations: 10, aliases: ["probing heterogeneous pretraining datasets with small curated datasets"] },
   "reverse rorschach": { year: 2023, month: 6, citations: 10 },
-  "superlative instruments": { year: 2021, citations: 10 },
+  "superlative instruments": { year: 2019, month: 11, citations: 10 },
   "improving solar panel efficiency using reinforcement learning": { year: 2017, citations: 10 },
   "toymaker": { year: 2017, month: 11, citations: 10 },
   "waterfall of meaning": { year: 2019, month: 6, citations: 10 },
@@ -471,7 +461,7 @@ export const projects: Project[] = [
   },
   {
     name: "Toymaker",
-    description: html`Animated short, not AI research. character animation lead / cloth sim lead / shading / modeling. <br><br> (digital animation wasn't great back then...)`,
+    description: html`Animated short, not AI research. character animation lead / cloth sim lead / shading / modeling. <br><br> Screened at festivals including KIDS FIRST!, Green Bay, LA Int'l Children's, and PA Indie Shorts (2018–2019)`,
     links: [{ link: "https://vimeo.com/242488116", name: "video" }],
     image: "toymaker.png",
     tags: ["art", "not_ai"],
