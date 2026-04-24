@@ -8,7 +8,7 @@ import { repeat } from 'lit/directives/repeat';
 import { mainProjects, Project } from './projects';
 
 /** Set to false to hide the timeline section and its nav link. */
-const SHOW_TIMELINE = false;
+const SHOW_TIMELINE = true;
 
 /**
  * Component for spreadsheet duplicates.

@@ -150,43 +150,6 @@ export const projects: Project[] = [
     tags: ["visualization"],
   },
   {
-    name: "LLM Comparator",
-    description: "Interactive side-by-side comparison of llm-generated datasets",
-    links: [
-      {
-        link: "https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10670495",
-        name: "paper",
-      },
-    ],
-    image: "llm_comp.png",
-    tags: ["llms_and_data", "visualization"],
-  },
-  {
-    name: "Linguistic Lens",
-    description:
-      "Interactive visualization tool for understanding grammatical diversity in LLM-generated text",
-    links: [
-      { link: "https://arxiv.org/pdf/2305.11364.pdf", name: "paper" },
-      {
-        link: "https://storage.googleapis.com/data-synth-trees/demo/index.html",
-        name: "Tool",
-      },
-      {
-        link: "https://github.com/PAIR-code/interpretability/tree/master/data-synth-syntax",
-        name: "code",
-      },
-    ],
-    image: "linguisticlens.png",
-    tags: ["llms_and_data", "visualization"],
-  },
-  {
-    name: "Know Your Data",
-    description: html`Tool for understanding large datasets using data augmentation and visualization <br><br> (I led the text version, which was internal to Google)`,
-    links: [{ link: "https://knowyourdata.withgoogle.com/", name: "KnowYourData" }],
-    image: "knowyourdata.png",
-    tags: ["llms_and_data", "visualization"],
-  },
-  {
     name: "Visualizing and understanding the geometry of BERT",
     description: "How are syntax and semantics are encoded in transformers?",
     links: [
@@ -229,6 +192,43 @@ export const projects: Project[] = [
       "art",
       "real_people_using_ai",
     ],
+  },
+  {
+    name: "Linguistic Lens",
+    description:
+      "Interactive visualization tool for understanding grammatical diversity in LLM-generated text",
+    links: [
+      { link: "https://arxiv.org/pdf/2305.11364.pdf", name: "paper" },
+      {
+        link: "https://storage.googleapis.com/data-synth-trees/demo/index.html",
+        name: "Tool",
+      },
+      {
+        link: "https://github.com/PAIR-code/interpretability/tree/master/data-synth-syntax",
+        name: "code",
+      },
+    ],
+    image: "linguisticlens.png",
+    tags: ["llms_and_data", "visualization"],
+  },
+  {
+    name: "Know Your Data",
+    description: html`Tool for understanding large datasets using data augmentation and visualization <br><br> (I led the text version, which was internal to Google)`,
+    links: [{ link: "https://knowyourdata.withgoogle.com/", name: "KnowYourData" }],
+    image: "knowyourdata.png",
+    tags: ["llms_and_data", "visualization"],
+  },
+  {
+    name: "LLM Comparator",
+    description: "Interactive side-by-side comparison of llm-generated datasets",
+    links: [
+      {
+        link: "https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10670495",
+        name: "paper",
+      },
+    ],
+    image: "llm_comp.png",
+    tags: ["llms_and_data", "visualization"],
   },
   {
     name: "Embedding projector",
@@ -418,16 +418,16 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     tags: ["llms_and_data", "people_and_data", "pretraining_data"],
   },
-  {
-    name: "Developing a conceptual framework for analyzing people in unstructured data",
-    description:
-      "Workshop version (SoLaR / NeurIPS workshops 2023) of ideas later expanded in SoUnD",
-    links: [
-      { link: "https://openreview.net/forum?id=QSPHfgw5fp", name: "paper" },
-    ],
-    hide_in_main_list: true,
-    tags: ["llms_and_data", "people_and_data", "pretraining_data"],
-  },
+  // {
+  //   name: "Developing a conceptual framework for analyzing people in unstructured data",
+  //   description:
+  //     "Workshop version (SoLaR / NeurIPS workshops 2023) of ideas later expanded in SoUnD",
+  //   links: [
+  //     { link: "https://openreview.net/forum?id=QSPHfgw5fp", name: "paper" },
+  //   ],
+  //   hide_in_main_list: true,
+  //   tags: ["llms_and_data", "people_and_data", "pretraining_data"],
+  // },
   {
     name: "RDoFlow: automatically assessing under-specified statistical analyses in HCI",
     description:

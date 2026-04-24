@@ -29,6 +29,7 @@ type TimelineItem = {
   laneY: number;
   x: number;
   hiddenFromMain: boolean;
+  preferenceFraction: number | null;
 };
 
 type PersistentTimelineLabel = {
@@ -43,13 +44,13 @@ type PersistentTimelineLabel = {
   kindText: string;
 };
 
-const TIMELINE_HEIGHT = 580;
+const TIMELINE_HEIGHT = 700;
 const TIMELINE_MARGIN_LEFT = 170;
 const TIMELINE_MARGIN_RIGHT = 50;
 const TIMELINE_TOP_LABEL_Y = 16;
-const TIMELINE_LANE_TOP = 145;
-const TIMELINE_LANE_SPACING = 38;
-const DATA_MIN_YEAR = 2016;
+const TIMELINE_LANE_TOP = 260;
+const TIMELINE_LANE_SPACING = 19;
+const DATA_MIN_YEAR = 2015;
 const DATA_MAX_YEAR = 2026.7;
 
 const TAG_BASE_COLORS: Record<ProjectTag, string> = {
@@ -90,6 +91,15 @@ const LANE_LABELS: Record<TimelineLane, string> = {
   art: 'art',
   real_people_using_ai: 'real people using AI',
   not_ai: 'not AI',
+};
+
+const LANE_COLORS: Record<TimelineLane, string> = {
+  data: TAG_BASE_COLORS.llms_and_data,
+  visualization: TAG_BASE_COLORS.visualization,
+  interpretability: TAG_BASE_COLORS.interpretability,
+  art: TAG_BASE_COLORS.art,
+  real_people_using_ai: TAG_BASE_COLORS.real_people_using_ai,
+  not_ai: TAG_BASE_COLORS.not_ai,
 };
 
 function normalizeTitle(value: string): string {
@@ -311,7 +321,14 @@ export class TimelineComponent extends LitElement {
   }
 
   private importanceRadiusForItem(item: TimelineItem): number {
-    return item.hiddenFromMain ? 4 : 16;
+    if (item.hiddenFromMain) {
+      return 4;
+    }
+    const minRadius = 4;
+    const maxRadius = 28;
+    const fraction = item.preferenceFraction ?? 0.5;
+    const curved = Math.pow(fraction, 2.4);
+    return minRadius + curved * (maxRadius - minRadius);
   }
 
   private publicationRadiusForItem(item: TimelineItem, items: TimelineItem[]): number {
@@ -433,107 +450,161 @@ export class TimelineComponent extends LitElement {
     );
   }
 
+  private hashedBit(seed: string): boolean {
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = (hash << 5) - hash + seed.charCodeAt(i);
+      hash |= 0;
+    }
+    return (hash & 1) === 0;
+  }
+
   private layoutPersistentLabels(items: TimelineItem[]): PersistentTimelineLabel[] {
-    const labelWidth = 186;
+    const labelMaxWidth = 100;
     const labelPaddingY = 2;
-    const chipRowHeight = 9;
-    const chipGap = 4;
     const lineHeight = 11;
-    const maxLines = 3;
-    const maxCharsPerLine = 30;
+    const maxLines = 4;
+    const maxCharsPerLine = 18;
+    const subjectGap = 30;
+    const labelGap = 5;
+    const overlapPad = 3;
+    const minY = 140;
+    const maxY = TIMELINE_HEIGHT - 8;
+    const lanesTop = TIMELINE_LANE_TOP;
+    const lanesBottom =
+      TIMELINE_LANE_TOP + (LANE_ORDER.length - 1) * TIMELINE_LANE_SPACING;
+    const subjectAreaTop = lanesTop - subjectGap;
+    const subjectAreaBottom = lanesBottom + subjectGap;
+
     const placed: PersistentTimelineLabel[] = [];
     const occupied: Array<{ x: number; y: number; width: number; height: number }> = [];
-    const minX = TIMELINE_MARGIN_LEFT + 6;
-    const maxX = this.timelineWidth - TIMELINE_MARGIN_RIGHT - 6;
-    const minY = 6;
-    const maxY = TIMELINE_HEIGHT - 8;
-    const dotBandTop = TIMELINE_LANE_TOP - 26;
-    const dotBandBottom =
-      TIMELINE_LANE_TOP + (LANE_ORDER.length - 1) * TIMELINE_LANE_SPACING + 26;
-    const byPriority = [...items].sort((a, b) => {
-      const aPriority = (a.hiddenFromMain ? 0 : 1000) + a.citationCount;
-      const bPriority = (b.hiddenFromMain ? 0 : 1000) + b.citationCount;
-      return bPriority - aPriority;
-    });
+    const occupiedLines: Array<{ x: number; y1: number; y2: number }> = [];
 
-    for (const item of byPriority) {
+    for (const item of items) {
       const title = this.shortPersistentLabelTitle(item.project.name);
       const lines = this.wrapTextByWords(title, maxCharsPerLine, maxLines);
-      const textHeight = lines.length * lineHeight;
-      const labelHeight = labelPaddingY * 2 + chipRowHeight + chipGap + textHeight;
+      const longestLine = lines.reduce(
+        (longest, line) => Math.max(longest, line.length),
+        0
+      );
+      const labelWidth = Math.min(
+        labelMaxWidth,
+        Math.max(40, Math.ceil(longestLine * 5.2))
+      );
+      const labelHeight = labelPaddingY * 2 + lines.length * lineHeight;
       const kindText = item.isPublication ? 'paper' : 'proj';
+      const initialDir: 'up' | 'down' = this.hashedBit('v:' + item.project.name)
+        ? 'up'
+        : 'down';
+      const initialSide: 'left' | 'right' = this.hashedBit(
+        'h:' + item.project.name
+      )
+        ? 'right'
+        : 'left';
+      const otherDir: 'up' | 'down' = initialDir === 'up' ? 'down' : 'up';
+      const otherSide: 'left' | 'right' =
+        initialSide === 'right' ? 'left' : 'right';
+      const variations: Array<{ direction: 'up' | 'down'; side: 'left' | 'right' }> = [
+        { direction: initialDir, side: initialSide },
+        { direction: initialDir, side: otherSide },
+        { direction: otherDir, side: initialSide },
+        { direction: otherDir, side: otherSide },
+      ];
+      const stepSize = labelHeight + labelGap;
 
       let chosen: PersistentTimelineLabel | undefined;
-      const preferBelow = item.laneY <= TIMELINE_LANE_TOP + 2 * TIMELINE_LANE_SPACING;
-      const directions: Array<'down' | 'up'> = preferBelow ? ['down', 'up'] : ['up', 'down'];
-
-      for (let row = 0; row < 36 && !chosen; row++) {
-        for (const direction of directions) {
-          for (const side of ['right', 'left'] as Array<'right' | 'left'>) {
-            let y =
-              direction === 'down'
-                ? item.laneY + 12 + row * (labelHeight + 8)
-                : item.laneY - 12 - labelHeight - row * (labelHeight + 8);
-            if (direction === 'down') {
-              y = Math.max(y, dotBandBottom + 8);
-            } else {
-              y = Math.min(y, dotBandTop - labelHeight - 8);
+      let chosenRect: { x: number; y: number; width: number; height: number } | undefined;
+      let chosenLine: { x: number; y1: number; y2: number } | undefined;
+      for (let attempt = 0; attempt < 80 && !chosen; attempt++) {
+        const offset = attempt * stepSize;
+        for (const strict of [true, false]) {
+          for (const variation of variations) {
+            const { direction, side } = variation;
+            const y =
+              direction === 'up'
+                ? subjectAreaTop - labelHeight - offset
+                : subjectAreaBottom + offset;
+            if (direction === 'up' && y < minY) {
+              continue;
             }
-            y = clamp(y, minY, maxY - labelHeight);
-            const rectX = side === 'right' ? item.x + 8 : item.x - labelWidth - 8;
-            const x = clamp(rectX, minX, maxX - labelWidth);
-            const rect = { x, y, width: labelWidth, height: labelHeight };
+            if (direction === 'down' && y + labelHeight > maxY) {
+              continue;
+            }
+            const rectX = side === 'right' ? item.x : item.x - labelWidth;
+            const rect = {
+              x: rectX,
+              y,
+              width: labelWidth,
+              height: labelHeight,
+            };
+            const inflated = {
+              x: rect.x - overlapPad,
+              y: rect.y - overlapPad,
+              width: rect.width + overlapPad * 2,
+              height: rect.height + overlapPad * 2,
+            };
             const overlap = occupied.some((placedRect) =>
-              this.rectsOverlap(
-                { x: rect.x - 6, y: rect.y - 6, width: rect.width + 12, height: rect.height + 12 },
-                placedRect
-              )
+              this.rectsOverlap(inflated, placedRect)
             );
-            if (!overlap) {
-              chosen = {
-                item,
-                x: item.x,
-                y,
-                width: labelWidth,
-                height: labelHeight,
-                direction,
-                side,
-                lines,
-                kindText,
-              };
-              occupied.push(rect);
-              break;
+            if (overlap) {
+              continue;
             }
+            const candidateLine = {
+              x: item.x,
+              y1: direction === 'down' ? item.laneY : y,
+              y2: direction === 'down' ? y + labelHeight : item.laneY,
+            };
+            if (strict) {
+              const newLineCrossesText = occupied.some(
+                (placedRect) =>
+                  candidateLine.x > placedRect.x &&
+                  candidateLine.x < placedRect.x + placedRect.width &&
+                  candidateLine.y1 < placedRect.y + placedRect.height &&
+                  candidateLine.y2 > placedRect.y
+              );
+              if (newLineCrossesText) {
+                continue;
+              }
+              const textCrossesExistingLine = occupiedLines.some(
+                (line) =>
+                  line.x > rect.x &&
+                  line.x < rect.x + rect.width &&
+                  line.y1 < rect.y + rect.height &&
+                  line.y2 > rect.y
+              );
+              if (textCrossesExistingLine) {
+                continue;
+              }
+            }
+            chosen = {
+              item,
+              x: item.x,
+              y,
+              width: labelWidth,
+              height: labelHeight,
+              direction,
+              side,
+              lines,
+              kindText,
+            };
+            chosenRect = rect;
+            chosenLine = candidateLine;
+            break;
           }
           if (chosen) {
             break;
           }
         }
-        if (chosen) {
-          break;
-        }
       }
 
-      if (!chosen) {
-        const side: 'right' | 'left' = item.x < this.timelineWidth * 0.58 ? 'right' : 'left';
-        const y =
-          item.laneY <= TIMELINE_LANE_TOP + 2 * TIMELINE_LANE_SPACING
-            ? dotBandBottom + 16 + placed.length * 6
-            : dotBandTop - labelHeight - 16 - placed.length * 6;
-        chosen = {
-          item,
-          x: item.x,
-          y: clamp(y, minY, maxY - labelHeight),
-          width: labelWidth,
-          height: labelHeight,
-          direction: y > item.laneY ? 'down' : 'up',
-          side,
-          lines,
-          kindText,
-        };
+      if (chosen && chosenRect && chosenLine) {
+        occupied.push(chosenRect);
+        occupiedLines.push(chosenLine);
       }
 
-      placed.push(chosen);
+      if (chosen) {
+        placed.push(chosen);
+      }
     }
 
     return placed;
@@ -547,6 +618,16 @@ export class TimelineComponent extends LitElement {
   }
 
   private computeTimelineItems(): TimelineItem[] {
+    const visibleRanks = new Map<string, number>();
+    let rank = 0;
+    for (const project of projects) {
+      if (!project.hide_in_main_list) {
+        visibleRanks.set(project.name, rank);
+        rank += 1;
+      }
+    }
+    const totalVisible = rank;
+
     return projects.map((project) => {
       const scholarMetadata = getScholarMetadata(project.name);
       const decimalYear = clamp(
@@ -563,6 +644,14 @@ export class TimelineComponent extends LitElement {
         ? artLaneY
         : laneYForTags(project.tags) + hashOffset(`${project.name}-y`, 6);
       const x = this.xForYear(decimalYear);
+      const hiddenFromMain = Boolean(project.hide_in_main_list);
+      const rankIndex = visibleRanks.get(project.name);
+      const preferenceFraction =
+        hiddenFromMain || rankIndex === undefined
+          ? null
+          : totalVisible <= 1
+            ? 1
+            : 1 - rankIndex / (totalVisible - 1);
       return {
         project,
         decimalYear,
@@ -572,26 +661,34 @@ export class TimelineComponent extends LitElement {
         strokeColor,
         laneY,
         x,
-        hiddenFromMain: Boolean(project.hide_in_main_list),
+        hiddenFromMain,
+        preferenceFraction,
       };
     });
   }
 
-  private smoothCurveCommands(points: Array<{ x: number; y: number }>): string {
+  private smoothCurveCommands(
+    points: Array<{ x: number; y: number }>,
+    tension = 0.45
+  ): string {
     if (points.length < 2) {
       return '';
     }
     const commands: string[] = [];
     for (let i = 1; i < points.length - 1; i++) {
-      const control = points[i];
+      const corner = points[i];
       const next = points[i + 1];
-      const midX = (control.x + next.x) / 2;
-      const midY = (control.y + next.y) / 2;
-      commands.push(`Q ${control.x} ${control.y} ${midX} ${midY}`);
+      const midX = (corner.x + next.x) / 2;
+      const midY = (corner.y + next.y) / 2;
+      const ctrlX = midX + (corner.x - midX) * tension;
+      const ctrlY = midY + (corner.y - midY) * tension;
+      commands.push(`Q ${ctrlX} ${ctrlY} ${midX} ${midY}`);
     }
     const last = points[points.length - 1];
     const penultimate = points[points.length - 2];
-    commands.push(`Q ${penultimate.x} ${penultimate.y} ${last.x} ${last.y}`);
+    const ctrlX = last.x + (penultimate.x - last.x) * tension;
+    const ctrlY = last.y + (penultimate.y - last.y) * tension;
+    commands.push(`Q ${ctrlX} ${ctrlY} ${last.x} ${last.y}`);
     return commands.join(' ');
   }
 
@@ -632,15 +729,20 @@ export class TimelineComponent extends LitElement {
       ? this.importanceRadiusForItem(hoveredItem) * hoveredScale
       : 0;
     const hoveredRingRadius = hoveredDotRadius + 7;
-    const areaTop = 8;
-    const areaBottom = 76;
+    const areaTop = 50;
+    const areaBottom = 115;
     const areaHeight = areaBottom - areaTop;
-    const areaScale = areaHeight / 2;
+    const areaScale = areaHeight;
     const yearTicks: number[] = [];
     for (let year = Math.ceil(DATA_MIN_YEAR); year <= Math.floor(DATA_MAX_YEAR); year++) {
       yearTicks.push(year);
     }
 
+    const brownBsStartYear = DATA_MIN_YEAR; // start of timeline
+    const brownBsEndYear = 2016 + 5 / 12; // June 2016, when Google internship starts
+    const fadeInStartYear = 2015 + 8 / 12; // when left-side opacity fade starts becoming visible
+    const fadeInEndYear = brownBsEndYear; // fade finishes by the time internship begins
+    const fadeOutStartYear = 2026; // right-side fade-out begins
     const googleInternStartYear = 2016 + 5 / 12; // June 2016
     const googleInternEndYear = 2016 + 9 / 12; // end of Sept 2016
     const brownMastersStartYear = googleInternEndYear; // Sept 2016
@@ -661,13 +763,14 @@ export class TimelineComponent extends LitElement {
     };
 
     const educationFractionAtYear = (year: number): number => {
+      const isBrownBs = year >= brownBsStartYear && year < brownBsEndYear;
       const isBrownMasters = year >= brownMastersStartYear && year < brownMastersEndYear;
       const isUw = year >= uwStartYear;
-      return isBrownMasters ? 1 : isUw ? 0.8 : 0;
+      return isBrownBs || isBrownMasters ? 1 : isUw ? 0.8 : 0;
     };
 
-    const googleLabelY = (_year: number): number => areaBottom + 6;
-    const educationLabelY = (_year: number): number => areaTop - 2;
+    const googleLabelY = (_year: number): number => areaBottom + 14;
+    const educationLabelY = (_year: number): number => areaTop - 4;
 
     const googleTopBoundary = areaSampleYears.map((year) => {
       const googleFraction = googleFractionAtYear(year);
@@ -696,7 +799,7 @@ export class TimelineComponent extends LitElement {
       <div class='timeline-controls font-sm'>
         <span class='timeline-control-label'>dot size:</span>
         <span class=${this.sizeMode === 'importance' ? 'timeline-mode active' : 'timeline-mode'}>
-          importance
+          favorites
         </span>
         <label class='timeline-switch'>
           <input
@@ -717,34 +820,68 @@ export class TimelineComponent extends LitElement {
         <svg class='timeline-svg' viewBox='0 0 ${this.timelineWidth} ${TIMELINE_HEIGHT}' role='img'>
           <desc>Timeline of projects and publications by theme and time.</desc>
 
+          <defs>
+            <linearGradient
+              id='area-edge-fade'
+              gradientUnits='userSpaceOnUse'
+              x1=${this.xForYear(DATA_MIN_YEAR)}
+              y1='0'
+              x2=${this.xForYear(DATA_MAX_YEAR)}
+              y2='0'
+            >
+              <stop offset=${(fadeInStartYear - DATA_MIN_YEAR) / (DATA_MAX_YEAR - DATA_MIN_YEAR)} stop-color='black'></stop>
+              <stop offset=${(fadeInEndYear - DATA_MIN_YEAR) / (DATA_MAX_YEAR - DATA_MIN_YEAR)} stop-color='white'></stop>
+              <stop offset=${(fadeOutStartYear - DATA_MIN_YEAR) / (DATA_MAX_YEAR - DATA_MIN_YEAR)} stop-color='white'></stop>
+              <stop offset='1' stop-color='black'></stop>
+            </linearGradient>
+            <mask
+              id='area-edge-fade-mask'
+              maskUnits='userSpaceOnUse'
+              x='0'
+              y='0'
+              width=${this.timelineWidth}
+              height=${TIMELINE_HEIGHT}
+            >
+              <rect
+                x='0'
+                y='0'
+                width=${this.timelineWidth}
+                height=${TIMELINE_HEIGHT}
+                fill='url(#area-edge-fade)'
+              ></rect>
+            </mask>
+          </defs>
+
           <rect x='0' y='0' width='${this.timelineWidth}' height='${TIMELINE_HEIGHT}' fill='#ffffff'></rect>
 
-          <path
-            d=${googlePath}
-            fill='#7289a8'
-            fill-opacity='0.36'
-            stroke='#ffffff'
-            stroke-opacity='0.95'
-            stroke-width='2.5'
-            stroke-linejoin='round'
-          ></path>
-          <path
-            d=${educationPath}
-            fill='#9eb2ca'
-            fill-opacity='0.42'
-            stroke='#ffffff'
-            stroke-opacity='0.95'
-            stroke-width='2.5'
-            stroke-linejoin='round'
-          ></path>
+          <g mask='url(#area-edge-fade-mask)'>
+            <path
+              d=${googlePath}
+              fill='#7289a8'
+              fill-opacity='0.36'
+              stroke='#ffffff'
+              stroke-opacity='0.95'
+              stroke-width='2.5'
+              stroke-linejoin='round'
+            ></path>
+            <path
+              d=${educationPath}
+              fill='#9eb2ca'
+              fill-opacity='0.42'
+              stroke='#ffffff'
+              stroke-opacity='0.95'
+              stroke-width='2.5'
+              stroke-linejoin='round'
+            ></path>
+          </g>
 
           ${yearTicks.map(
             (year) => svg`
               <line
                 x1=${this.xForYear(year)}
-                y1='38'
+                y1=${areaBottom + 30}
                 x2=${this.xForYear(year)}
-                y2='385'
+                y2=${TIMELINE_LANE_TOP + (LANE_ORDER.length - 1) * TIMELINE_LANE_SPACING + 50}
                 stroke='#1a1a1a'
                 stroke-opacity='0.05'
                 stroke-width='1'
@@ -785,6 +922,12 @@ export class TimelineComponent extends LitElement {
             'DeepMind'
           )}
           ${this.renderAreaLabel(
+            this.xForYear((brownBsStartYear + brownBsEndYear) / 2),
+            educationLabelY((brownBsStartYear + brownBsEndYear) / 2),
+            'Brown',
+            'BS'
+          )}
+          ${this.renderAreaLabel(
             this.xForYear((brownMastersStartYear + brownMastersEndYear) / 2),
             educationLabelY((brownMastersStartYear + brownMastersEndYear) / 2),
             'Brown',
@@ -805,8 +948,8 @@ export class TimelineComponent extends LitElement {
                 x2=${this.timelineWidth - TIMELINE_MARGIN_RIGHT}
                 y2=${TIMELINE_LANE_TOP + laneIndex * TIMELINE_LANE_SPACING}
                 stroke='#4e4e4e'
-                stroke-opacity='0.5'
-                stroke-width='1.2'
+                stroke-opacity='0.1'
+                stroke-width='3.2'
               ></line>
               <text
                 class='timeline-lane-label'
@@ -814,7 +957,7 @@ export class TimelineComponent extends LitElement {
                 y=${TIMELINE_LANE_TOP + laneIndex * TIMELINE_LANE_SPACING + 4}
                 text-anchor='end'
               >
-                ${LANE_LABELS[lane]}
+                ${LANE_LABELS[lane].toUpperCase()}
               </text>
             `
           )}
@@ -822,19 +965,36 @@ export class TimelineComponent extends LitElement {
           ${persistentLabels.map((label) => {
             const scale = this.scaleForItem(label.item, timelineItems);
             const baseRadius = this.importanceRadiusForItem(label.item) * scale;
+            const ringRadius = baseRadius + 3;
+            const cx = label.item.x;
+            const cy = label.item.laneY;
             const y1 =
+              label.direction === 'down' ? cy + ringRadius : label.y;
+            const y2 =
               label.direction === 'down'
-                ? label.item.laneY + baseRadius + 2
-                : label.item.laneY - baseRadius - 2;
-            const y2 = label.direction === 'down' ? label.y : label.y + label.height;
+                ? label.y + label.height
+                : cy - ringRadius;
+            const lineClass =
+              label.direction === 'down'
+                ? 'timeline-persistent-line down'
+                : 'timeline-persistent-line';
+            const sweepFlag = label.direction === 'down' ? 0 : 1;
+            const arcPath = `M ${cx - ringRadius} ${cy} A ${ringRadius} ${ringRadius} 0 0 ${sweepFlag} ${cx + ringRadius} ${cy}`;
             return svg`
               <line
-                class='timeline-persistent-line'
-                x1=${label.item.x}
+                class=${lineClass}
+                x1=${cx}
                 y1=${y1}
-                x2=${label.item.x}
+                x2=${cx}
                 y2=${y2}
+                stroke=${label.item.dotColor}
               ></line>
+              <path
+                class=${lineClass}
+                d=${arcPath}
+                fill='none'
+                stroke=${label.item.dotColor}
+              ></path>
             `;
           })}
 
@@ -885,8 +1045,8 @@ export class TimelineComponent extends LitElement {
                     r=${this.importanceRadiusForItem(item)}
                     fill=${item.dotColor}
                     fill-opacity=${this.itemOpacity(item)}
-                    stroke=${item.isPublication ? item.strokeColor : 'none'}
-                    stroke-width=${item.isPublication ? 2 : 0}
+                    stroke='none'
+                    stroke-width='0'
                   >
                     <title>${item.project.name}</title>
                   </circle>
@@ -895,38 +1055,26 @@ export class TimelineComponent extends LitElement {
             `
           )}
 
-          ${persistentLabels.map((label) => svg`
+          ${persistentLabels.map((label) => {
+            const textAnchor = label.side === 'right' ? 'start' : 'end';
+            const textX = label.side === 'right' ? label.x + 3 : label.x - 3;
+            return svg`
             <g class='timeline-persistent-label'>
-              <text
-                class='timeline-persistent-icon'
-                x=${label.side === 'right' ? label.x + 8 : label.x - 8}
-                y=${label.y + 10}
-                text-anchor=${label.side === 'right' ? 'start' : 'end'}
-              >
-                ${label.kindText === 'paper' ? '[*]' : '[+]'}
-              </text>
-              <text
-                class='timeline-persistent-kind-text'
-                x=${label.side === 'right' ? label.x + 36 : label.x - 36}
-                y=${label.y + 10}
-                text-anchor='middle'
-              >
-                ${label.kindText}
-              </text>
               ${label.lines.map(
                 (line, lineIndex) => svg`
                   <text
                     class='timeline-persistent-label-text'
-                    x=${label.side === 'right' ? label.x + 8 : label.x - 8}
-                    y=${label.y + 24 + lineIndex * 11}
-                    text-anchor=${label.side === 'right' ? 'start' : 'end'}
+                    x=${textX}
+                    y=${label.y + 2 + 8 + lineIndex * 11}
+                    text-anchor=${textAnchor}
                   >
                     ${line}
                   </text>
                 `
               )}
             </g>
-          `)}
+          `;
+          })}
         </svg>
         ${hoveredItem
           ? html`
