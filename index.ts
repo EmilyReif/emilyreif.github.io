@@ -1,23 +1,20 @@
 // tslint:disable:g3-no-void-expression
 
-import * as d3 from 'd3';
-import { LitElement, html, svg } from 'lit';
+import './timeline-component';
+
+import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators';
-import { classMap } from 'lit/directives/class-map';
 import { repeat } from 'lit/directives/repeat';
-import { styleMap } from 'lit/directives/style-map';
 import { mainProjects, Project } from './projects';
+
+/** Set to false to hide the timeline section and its nav link. */
+const SHOW_TIMELINE = false;
 
 /**
  * Component for spreadsheet duplicates.
  */
 @customElement('index-component')
 export class TreesComponent extends LitElement {
-
-  constructor() {
-    super();
-  }
-
   createRenderRoot() {
     return this;
   }
@@ -26,6 +23,7 @@ export class TreesComponent extends LitElement {
     return html`
     <div class='topbar'>
       ${this.renderNav('about', '#about')}
+      ${SHOW_TIMELINE ? this.renderNav('timeline', '#timeline') : null}
       ${this.renderNav('projects', '#projects')}
       ${this.renderNav('papers [↗]', 'https://scholar.google.com/citations?user=J1hMgtAAAAAJ')}
     </div>
@@ -35,6 +33,16 @@ export class TreesComponent extends LitElement {
         ${this.renderAbout()}
       </div>
     </div>
+    ${SHOW_TIMELINE
+      ? html`
+    <div class='content timeline-content'>
+      <div class='timeline-title-wrap'>
+        <h1 class='font-lg' id='timeline'>Professional timeline</h1>
+      </div>
+      <timeline-component></timeline-component>
+    </div>
+    `
+      : null}
     <div class='content'>
       <h1 class='font-lg'  id='projects'>Projects</h1>
       ${this.renderProjects()}
@@ -47,17 +55,17 @@ export class TreesComponent extends LitElement {
       return html`
         <a href=${link} target="_blank" class='icon-link'><img src='./images/${iconImage}'></img></a>
       `;
-    }
+    };
     return html`
     <div class='external'>
       ${button('twitter.png', 'https://twitter.com/emilyrreif')}
       ${button('github.png', 'https://github.com/EmilyReif')}
       ${button('scholar.png', 'https://scholar.google.com/citations?user=J1hMgtAAAAAJ')}
-    </div> `
+    </div> `;
   }
 
   private renderNav(name: string, link: string) {
-    return html`<div class='nav'> <a href=${link}>${name}</a></div>`
+    return html`<div class='nav'> <a href=${link}>${name}</a></div>`;
   }
 
   private renderAbout() {
@@ -94,17 +102,22 @@ export class TreesComponent extends LitElement {
     `;
   }
 
-
   private link(name: string, link: string) {
-    // return html`<a href=${link}>${name}[↗]</a>`
-    return html`<a class='upper' href=${link} target="_blank">${name}</a>`
+    return html`<a class='upper' href=${link} target="_blank">${name}</a>`;
   }
 
   private renderProjects() {
-   return repeat(mainProjects, project => this.renderProject(project));
+    return repeat(
+      mainProjects,
+      (project) => project.name,
+      (project) => this.renderProject(project)
+    );
   }
+
   private renderProject(project: Project) {
-    const links = project.links.map(link => html`<div>${this.link(link.name, link.link)}</div>`);
+    const links = project.links.map(
+      (link) => html`<div>${this.link(link.name, link.link)}</div>`
+    );
     return html`
     <div class='title'>${project.name}</div>
     <div class='project'>
@@ -119,5 +132,4 @@ export class TreesComponent extends LitElement {
     </div>
     `;
   }
-
 }

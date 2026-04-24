@@ -14,7 +14,10 @@
     "parcel": "^2.8.3"
   },
   "scripts": {
-    "watch": "cross-env NODE_ENV=development parcel index.html --dist-dir=./static",   
+    "clean": "find static -maxdepth 1 -type f ! -name 'CNAME' ! -name '*.pdf' -delete && rm -rf dist",
+    "prewatch": "yarn clean",
+    "watch": "cross-env NODE_ENV=development parcel index.html --dist-dir=./static",
+    "prebuild": "yarn clean",
     "build": "cross-env NODE_ENV=production parcel build index.html --public-url ./ --dist-dir=./static",
     "link-local": "yalc link",
     "predeploy": "yarn run build && cp CNAME static/CNAME",

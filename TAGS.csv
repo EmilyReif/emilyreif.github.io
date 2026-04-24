@@ -1,0 +1,36 @@
+project,hide_from_main_list,llms_and_data,people_and_data,pretraining_data,visualization,interpretability,art,real_people_using_ai,not_ai
+Waterfall of meaning,false,x,,,x,x,x,x,
+Moodboard search,false,,,,,,x,x,
+Reverse rorschach,false,,,,,,x,x,
+Toymaker,false,,,,,,x,,x
+Visualizing Distributions of Language Model Generations,false,x,,,x,x,,,
+A gentle introduction to graph neural networks,false,,,,x,,,,
+Linguistic Lens,false,x,,,x,,,,
+Visualizing and understanding the geometry of BERT,false,,,,x,x,,,
+Embedding projector,false,x,,,x,x,,,
+Language interpretability tool,false,,,,x,x,,,
+Evaluating attribution for graph neural networks,true,,,,,x,,,
+An interpretability illusion for BERT,true,,,,,x,,,
+LLM Comparator,false,x,,,x,,,,
+Know Your Data,false,x,,,x,,,,
+PALM + PALM2: RAI data analysis,false,x,x,x,,,,,
+A pretrainer's guide to training data,false,x,,x,,,,,
+A recipe for arbitrary text style transfer with LLMs,false,x,,,,,,,
+Automatic Histograms,false,x,,,x,,,,
+Wordcraft writers workshop,false,x,,,,,,x,
+Probing pretraining data,false,x,,x,,x,,,
+NNs and gestalt,false,,,,,x,,,
+SMILY: HITL tool for pathologists,false,,,,,,,x,x
+Superlative Instruments,false,,,,,,,,x
+Who's asking? User personas and the mechanics of latent misalignment,true,,,,,x,,,
+Understanding the dataset practitioners behind large language model development,true,x,x,,,,,,
+Data similarity is not enough to explain language model performance,true,x,,x,,x,,,
+The evolution of LLM adoption in industry data curation practices,true,x,x,,,,,,
+LLM adoption in data curation workflows: industry practices and insights,true,x,x,,,,,,
+SoUnD: analyzing social representation in unstructured data,true,x,x,x,,,,,
+Developing a conceptual framework for analyzing people in unstructured data,true,x,x,x,,,,,
+RDoFlow: automatically assessing under-specified statistical analyses in HCI,true,,,,,,,,x
+The case for a single model that can both generate continuations and fill-in-the-blank,true,x,,,,,,,
+Bandit-based solar panel control,true,,,,,,,x,
+Improving solar panel efficiency using reinforcement learning,true,,,,,,,x,x
+Toward improving solar panel efficiency using reinforcement learning,true,,,,,,,x,x
