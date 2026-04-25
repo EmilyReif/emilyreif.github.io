@@ -1,27 +1,57 @@
 import { TemplateResult, html } from "lit";
 
-export const PROJECT_TAG_ORDER = [
-  "llms_and_data",
-  "people_and_data",
-  "pretraining_data",
-  "visualization",
-  "interpretability",
-  "art",
-  "real_people_using_ai",
-  "not_ai",
+/** Vertical lane on the timeline (color + y position). */
+export const PROJECT_CATEGORY_ORDER = [
+  "research",
+  "tools",
+  "creative_work",
 ] as const;
 
-export type ProjectTag = (typeof PROJECT_TAG_ORDER)[number];
+export type ProjectCategory = (typeof PROJECT_CATEGORY_ORDER)[number];
 
-const tagOrderIndex = new Map(
-  PROJECT_TAG_ORDER.map((t, i) => [t, i] as const)
+/** Cross-cutting project networks (chips + hover highlight), not y-position. */
+export const PROJECT_NETWORK_ORDER = [
+  "llms_and_data",
+  "visualization",
+  "interpretability",
+  "experts_using_ai",
+  "kyd",
+  "embeddings",
+] as const;
+
+export type ProjectNetwork = (typeof PROJECT_NETWORK_ORDER)[number];
+
+const categoryOrderIndex = new Map(
+  PROJECT_CATEGORY_ORDER.map((t, i) => [t, i] as const)
 );
 
-export function sortProjectTags(tags: ProjectTag[]): ProjectTag[] {
-  return [...tags].sort(
-    (a, b) => (tagOrderIndex.get(a) ?? 0) - (tagOrderIndex.get(b) ?? 0)
+const networkOrderIndex = new Map(
+  PROJECT_NETWORK_ORDER.map((t, i) => [t, i] as const)
+);
+
+export function sortProjectCategories(
+  categories: ProjectCategory[]
+): ProjectCategory[] {
+  return [...categories].sort(
+    (a, b) =>
+      (categoryOrderIndex.get(a) ?? 0) - (categoryOrderIndex.get(b) ?? 0)
   );
 }
+
+export function sortProjectNetworks(networks: ProjectNetwork[]): ProjectNetwork[] {
+  return [...networks].sort(
+    (a, b) => (networkOrderIndex.get(a) ?? 0) - (networkOrderIndex.get(b) ?? 0)
+  );
+}
+
+export const PROJECT_NETWORK_LABELS: Record<ProjectNetwork, string> = {
+  llms_and_data: "LLMs and data",
+  visualization: "Visualization",
+  interpretability: "Interpretability",
+  experts_using_ai: "Applications",
+  kyd: "KYD",
+  embeddings: "Embeddings",
+};
 
 type Link = {
   name: string;
@@ -35,7 +65,10 @@ export type Project = {
   dates?: string;
   role?: string;
   venue?: string;
-  tags: ProjectTag[];
+  /** Lane placement and dot color on the timeline. */
+  categories: ProjectCategory[];
+  /** Thematic networks (chip filter / highlight). */
+  networks: ProjectNetwork[];
   /** When true, excluded from the main Projects list (still in data for exports / tooling). */
   hide_in_main_list?: boolean;
 };
@@ -62,10 +95,24 @@ export const PROJECT_TIMELINE_METADATA: Record<string, ProjectTimelineMetadata> 
   "data similarity is not enough to explain language model performance": { year: 2023, month: 12, citations: 28 },
   "an interpretability illusion for bert": { year: 2021, citations: 95 },
   "evaluating attribution for graph neural networks": { year: 2020, month: 12, citations: 135 },
-  "so und framework analyzing so cial representation in un structured d ata": { year: 2024, citations: 15, aliases: ["sound analyzing social representation in unstructured data"] },
+  "so und framework analyzing so cial representation in un structured d ata": {
+    year: 2024,
+    citations: 15,
+    aliases: [
+      "sound analyzing social representation in unstructured data",
+      "developing a conceptual framework for analyzing people in unstructured data",
+    ],
+  },
   "understanding the dataset practitioners behind large language models": { year: 2024, citations: 12, aliases: ["understanding the dataset practitioners behind large language model development"] },
-  "the evolution of llm adoption in industry data curation practices": { year: 2024, citations: 9 },
-  "llm adoption in data curation workflows industry practices and insights": { year: 2025, citations: 7 },
+  "llm adoption in industry data curation practices": {
+    year: 2024,
+    citations: 16,
+    aliases: [
+      "the evolution of llm adoption in industry data curation practices",
+      "llm adoption in data curation workflows industry practices and insights",
+      "llm adoption in data curation workflows: industry practices and insights",
+    ],
+  },
   "who s asking user personas and the mechanics of latent misalignment": { year: 2024, citations: 10, aliases: ["who s asking user personas and the mechanics of latent misalignment"] },
   "rdoflow automatically assessing under specified statistical analyses in hci": { year: 2026, month: 7, citations: 2, aliases: ["rdoflow automatically assessing under specified statistical analyses in hci"] },
   "the case for a single model that can both generate continuations and fill in the blank": { year: 2022, citations: 90 },
@@ -77,7 +124,15 @@ export const PROJECT_TIMELINE_METADATA: Record<string, ProjectTimelineMetadata> 
   "probing pretraining data": { year: 2024, month: 7, citations: 10, aliases: ["probing heterogeneous pretraining datasets with small curated datasets"] },
   "reverse rorschach": { year: 2023, month: 6, citations: 10 },
   "superlative instruments": { year: 2019, month: 11, citations: 10 },
-  "improving solar panel efficiency using reinforcement learning": { year: 2017, citations: 10 },
+  "improving solar panel efficiency using reinforcement learning": {
+    year: 2017,
+    citations: 10,
+    aliases: [
+      "bandit-based solar panel control",
+      "toward improving solar panel efficiency using reinforcement learning",
+      "solar panel tracking and control reinforcement learning",
+    ],
+  },
   "toymaker": { year: 2017, month: 11, citations: 10 },
   "waterfall of meaning": { year: 2019, month: 6, citations: 10 },
 };
@@ -96,7 +151,8 @@ export const projects: Project[] = [
       { link: "https://emilyreif.com/llm-consistency-vis/", name: "demo" },
     ],
     image: "llm_consistency_vis.png",
-    tags: ["llms_and_data", "visualization", "interpretability"],
+    categories: ["research", "tools"],
+    networks: ["llms_and_data", "visualization", "interpretability"],
   },
   {
     name: "PALM + PALM2: RAI data analysis",
@@ -106,7 +162,8 @@ export const projects: Project[] = [
       { link: "https://arxiv.org/abs/2305.10403", name: "PaLM2 technical report" },
     ],
     image: "topics.png",
-    tags: ["llms_and_data", "people_and_data", "pretraining_data"],
+    categories: ["research"],
+    networks: ["llms_and_data", "kyd"],
   },
   {
     name: "A pretrainer's guide to training data",
@@ -116,7 +173,8 @@ export const projects: Project[] = [
       { link: "https://aclanthology.org/2024.naacl-long.179/", name: "paper" },
     ],
     image: "pretraining.jpg",
-    tags: ["llms_and_data", "pretraining_data"],
+    categories: ["research"],
+    networks: ["llms_and_data", "kyd"],
   },
   {
     name: "A recipe for arbitrary text style transfer with LLMs",
@@ -130,14 +188,16 @@ export const projects: Project[] = [
       },
     ],
     image: "style_transfer.png",
-    tags: ["llms_and_data"],
+    categories: ["research"],
+    networks: ["llms_and_data"],
   },
   {
     name: "A gentle introduction to graph neural networks",
     description: "Visualization-based distill.pub article on understanding GNNs",
     links: [{ link: "https://distill.pub/2021/gnn-intro", name: "paper" }],
     image: "gnn.png",
-    tags: ["visualization"],
+    categories: ["research"],
+    networks: ["visualization"],
   },
   {
     name: "Visualizing and understanding the geometry of BERT",
@@ -157,7 +217,8 @@ export const projects: Project[] = [
       },
     ],
     image: "bert.png",
-    tags: ["visualization", "interpretability"],
+    categories: ["research"],
+    networks: ["llms_and_data", "visualization", "interpretability"],
   },
   {
     name: "Waterfall of meaning",
@@ -175,12 +236,12 @@ export const projects: Project[] = [
       { link: "https://github.com/PAIR-code/waterfall-of-meaning", name: "code" },
     ],
     image: "waterfall_of_meaning.png",
-    tags: [
+    categories: ["creative_work"],
+    networks: [
       "llms_and_data",
       "visualization",
       "interpretability",
-      "art",
-      "real_people_using_ai",
+      "embeddings",
     ],
   },
   {
@@ -199,14 +260,16 @@ export const projects: Project[] = [
       },
     ],
     image: "linguisticlens.png",
-    tags: ["llms_and_data", "visualization"],
+    categories: ["research", "tools"],
+    networks: ["llms_and_data", "visualization"],
   },
   {
     name: "Know Your Data",
     description: html`Tool for understanding large datasets using data augmentation and visualization <br><br> (I led the text version, which was internal to Google)`,
     links: [{ link: "https://knowyourdata.withgoogle.com/", name: "KnowYourData" }],
     image: "knowyourdata.png",
-    tags: ["llms_and_data", "visualization"],
+    categories: ["tools"],
+    networks: ["llms_and_data", "visualization", "kyd"],
   },
   {
     name: "LLM Comparator",
@@ -218,7 +281,8 @@ export const projects: Project[] = [
       },
     ],
     image: "llm_comp.png",
-    tags: ["llms_and_data", "visualization"],
+    categories: ["research", "tools"],
+    networks: ["llms_and_data", "visualization"],
   },
   {
     name: "Embedding projector",
@@ -228,7 +292,13 @@ export const projects: Project[] = [
       { link: "https://projector.tensorflow.org/", name: "Tool" },
     ],
     image: "embeddingprojector.png",
-    tags: ["llms_and_data", "visualization", "interpretability"],
+    categories: ["research", "tools"],
+    networks: [
+      "llms_and_data",
+      "visualization",
+      "interpretability",
+      "embeddings",
+    ],
   },
   {
     name: "Automatic Histograms",
@@ -241,7 +311,8 @@ export const projects: Project[] = [
       },
     ],
     image: "ah.png",
-    tags: ["llms_and_data", "visualization"],
+    categories: ["research", "tools"],
+    networks: ["llms_and_data", "visualization", "kyd"],
   },
   {
     name: "Wordcraft writers workshop",
@@ -252,7 +323,8 @@ export const projects: Project[] = [
       { link: "https://arxiv.org/abs/2107.07430", name: "paper" },
     ],
     image: "wordcraft.jpg",
-    tags: ["llms_and_data", "real_people_using_ai"],
+    categories: ["research", "tools", "creative_work"],
+    networks: ["experts_using_ai"],
   },
   {
     name: "Language interpretability tool",
@@ -262,7 +334,8 @@ export const projects: Project[] = [
       { link: "https://arxiv.org/abs/2008.05122", name: "paper" },
     ],
     image: "lit.png",
-    tags: ["visualization", "interpretability"],
+    categories: ["research", "tools"],
+    networks: ["interpretability"],
   },
   {
     name: "Probing pretraining data",
@@ -274,7 +347,8 @@ export const projects: Project[] = [
       },
     ],
     image: "probing.png",
-    tags: ["llms_and_data", "pretraining_data", "interpretability"],
+    categories: ["research"],
+    networks: ["llms_and_data", "interpretability", "kyd", "embeddings"],
   },
   {
     name: "NNs and gestalt",
@@ -286,7 +360,8 @@ export const projects: Project[] = [
       },
     ],
     image: "gestalt.png",
-    tags: ["interpretability"],
+    categories: ["research"],
+    networks: ["interpretability"],
   },
   {
     name: "Moodboard search",
@@ -298,7 +373,8 @@ export const projects: Project[] = [
       },
     ],
     image: "cavcam.png",
-    tags: ["art", "real_people_using_ai"],
+    categories: ["creative_work"],
+    networks: ["embeddings", "experts_using_ai"],
   },
   {
     name: "Reverse rorschach",
@@ -310,7 +386,8 @@ export const projects: Project[] = [
       },
     ],
     image: "rorsch.png",
-    tags: ["art", "real_people_using_ai"],
+    categories: ["creative_work"],
+    networks: ["experts_using_ai"],
   },
   {
     name: "SMILY: HITL tool for pathologists",
@@ -323,7 +400,8 @@ export const projects: Project[] = [
       },
     ],
     image: "smily.png",
-    tags: ["real_people_using_ai", "not_ai"],
+    categories: ["research", "tools"],
+    networks: ["experts_using_ai", "embeddings"],
   },
   {
     name: "Superlative Instruments",
@@ -331,7 +409,8 @@ export const projects: Project[] = [
       "Synthesizers, not AI research. implemented the website, helped with company ops, etc",
     links: [{ link: "https://playsuperlative.com/", name: "site" }],
     image: "superlative.png",
-    tags: ["not_ai"],
+    categories: ["creative_work"],
+    networks: [],
   },
   {
     name: "Evaluating attribution for graph neural networks",
@@ -339,12 +418,13 @@ export const projects: Project[] = [
       "Quantitative evaluation of attribution methods for GNNs with synthetic ground truth",
     links: [
       {
-        link: "https://proceedings.neurips.cc/paper/2020/hash/417fbbf2e9d5a28a855a11894b2e795a-Abstract.html",
+        link: "https://proceedings.neurips.cc/paper_files/paper/2020/hash/417fbbf2e9d5a28a855a11894b2e795a-Abstract.html",
         name: "paper",
       },
     ],
     hide_in_main_list: true,
-    tags: ["interpretability"],
+    categories: ["research"],
+    networks: ["interpretability"],
   },
   {
     name: "An interpretability illusion for BERT",
@@ -352,14 +432,16 @@ export const projects: Project[] = [
       "Phenomena that can make BERT-based interpretability tools appear more reliable than they are",
     links: [{ link: "https://arxiv.org/abs/2104.07143", name: "paper" }],
     hide_in_main_list: true,
-    tags: ["interpretability"],
+    categories: ["research"],
+    networks: ["interpretability"],
   },
   {
     name: "Who's asking? User personas and the mechanics of latent misalignment",
     description: "How implicit user personas affect model behavior and safety",
     links: [{ link: "https://arxiv.org/abs/2406.12094", name: "paper" }],
     hide_in_main_list: true,
-    tags: ["interpretability"],
+    categories: ["research"],
+    networks: ["interpretability", "embeddings"],
   },
   {
     name: "Understanding the dataset practitioners behind large language model development",
@@ -367,7 +449,8 @@ export const projects: Project[] = [
       "Interviews and analysis of data practitioners in LLM development (CHI 2024 extended abstract)",
     links: [{ link: "https://arxiv.org/abs/2402.16611", name: "paper" }],
     hide_in_main_list: true,
-    tags: ["llms_and_data", "people_and_data"],
+    categories: ["research"],
+    networks: ["llms_and_data"],
   },
   {
     name: "Data similarity is not enough to explain language model performance",
@@ -377,47 +460,39 @@ export const projects: Project[] = [
       { link: "https://aclanthology.org/2023.emnlp-main.695/", name: "paper" },
     ],
     hide_in_main_list: true,
-    tags: ["llms_and_data", "pretraining_data", "interpretability"],
+    categories: ["research"],
+    networks: ["llms_and_data", "interpretability", "embeddings", "kyd"],
   },
   {
-    name: "The evolution of LLM adoption in industry data curation practices",
+    name: "LLM adoption in industry data curation practices",
     description:
-      "Survey, interviews, and user studies on how data teams adopt LLMs in curation workflows",
-    links: [{ link: "https://arxiv.org/abs/2412.16089", name: "paper" }],
-    hide_in_main_list: true,
-    tags: ["llms_and_data", "people_and_data"],
-  },
-  {
-    name: "LLM adoption in data curation workflows: industry practices and insights",
-    description:
-      "CHI 2025 extended abstract; related follow-on to the industry adoption work",
+      "Survey, interviews, and user studies on how data teams adopt LLMs in curation workflows (2024 paper), plus a CHI 2025 extended abstract with further industry insights.",
     links: [
+      { link: "https://arxiv.org/abs/2412.16089", name: "paper (2024)" },
       {
         link: "https://researchr.org/publication/QianLRSHCWCTK25",
-        name: "publication",
+        name: "CHI 2025 extended abstract",
       },
     ],
     hide_in_main_list: true,
-    tags: ["llms_and_data", "people_and_data"],
+    categories: ["research"],
+    networks: ["llms_and_data", "experts_using_ai", "kyd"],
   },
   {
     name: "SoUnD: analyzing social representation in unstructured data",
     description:
-      "Framework for RAI analysis of who and what is represented in foundation model training data (AIES 2024)",
-    links: [{ link: "https://arxiv.org/abs/2311.17259", name: "paper" }],
+      "Framework for RAI analysis of who and what is represented in foundation model training data (AIES 2024). Builds on an earlier workshop paper developing the conceptual framework.",
+    links: [
+      { link: "https://arxiv.org/abs/2311.17259", name: "paper (SoUnD)" },
+      {
+        link: "https://openreview.net/forum?id=QSPHfgw5fp",
+        name: "workshop paper (framework)",
+      },
+    ],
     hide_in_main_list: true,
-    tags: ["llms_and_data", "people_and_data", "pretraining_data"],
+    categories: ["research"],
+    networks: ["llms_and_data", "kyd"],
   },
-  // {
-  //   name: "Developing a conceptual framework for analyzing people in unstructured data",
-  //   description:
-  //     "Workshop version (SoLaR / NeurIPS workshops 2023) of ideas later expanded in SoUnD",
-  //   links: [
-  //     { link: "https://openreview.net/forum?id=QSPHfgw5fp", name: "paper" },
-  //   ],
-  //   hide_in_main_list: true,
-  //   tags: ["llms_and_data", "people_and_data", "pretraining_data"],
-  // },
   {
     name: "RDoFlow: automatically assessing under-specified statistical analyses in HCI",
     description:
@@ -426,7 +501,8 @@ export const projects: Project[] = [
       { link: "https://iui.acm.org/2026/accepted-papers/", name: "venue" },
     ],
     hide_in_main_list: true,
-    tags: ["not_ai"],
+    categories: ["research"],
+    networks: [],
   },
   {
     name: "The case for a single model that can both generate continuations and fill-in-the-blank",
@@ -439,12 +515,13 @@ export const projects: Project[] = [
       },
     ],
     hide_in_main_list: true,
-    tags: ["llms_and_data"],
+    categories: ["research"],
+    networks: ["llms_and_data"],
   },
   {
-    name: "Improving solar panel efficiency using reinforcement learning",
+    name: "Solar panel tracking and control (reinforcement learning)",
     description:
-      "RLDM 2017 version of the solar tracking work, with related EnviroInfo 2017 and AAAI 2018 follow-ons.",
+      "Brown MS work on reinforcement learning for solar tracking and control: RLDM 2017 and EnviroInfo 2017 on efficiency improvements, AAAI 2018 on bandit-based control, plus a related write-up on improving efficiency.",
     links: [
       { link: "http://cs.brown.edu/~dabel/papers/solarl.pdf", name: "RLDM 2017 paper" },
       {
@@ -453,18 +530,20 @@ export const projects: Project[] = [
       },
       {
         link: "https://aaai.org/papers/11415-bandit-based-solar-panel-control",
-        name: "AAAI 2018 paper",
+        name: "AAAI 2018 (bandit control)",
       },
     ],
     hide_in_main_list: true,
-    tags: ["real_people_using_ai", "not_ai"],
+    categories: ["research"],
+    networks: ["experts_using_ai"],
   },
   {
     name: "Toymaker",
     description: html`Animated short, not AI research. character animation lead / cloth sim lead / shading / modeling. <br><br> Screened at festivals including KIDS FIRST!, Green Bay, LA Int'l Children's, and PA Indie Shorts (2018–2019)`,
     links: [{ link: "https://vimeo.com/242488116", name: "video" }],
     image: "toymaker.png",
-    tags: ["art", "not_ai"],
+    categories: ["creative_work"],
+    networks: [],
   },
 ];
 

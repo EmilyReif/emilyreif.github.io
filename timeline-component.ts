@@ -4,20 +4,17 @@ import { LitElement, html, svg } from 'lit';
 import { customElement, state } from 'lit/decorators';
 import {
   Project,
-  ProjectTag,
+  ProjectCategory,
+  ProjectNetwork,
   projects,
   ProjectTimelineMetadata,
   PROJECT_TIMELINE_METADATA,
+  PROJECT_NETWORK_LABELS,
+  PROJECT_NETWORK_ORDER,
 } from './projects';
 
 type TimelineSizeMode = 'importance' | 'publication';
-type TimelineLane =
-  | 'data'
-  | 'visualization'
-  | 'interpretability'
-  | 'art'
-  | 'real_people_using_ai'
-  | 'not_ai';
+type TimelineCategoryLane = 'research' | 'tools' | 'creative_work';
 
 type TimelineItem = {
   project: Project;
@@ -48,111 +45,38 @@ const TIMELINE_HEIGHT = 700;
 const TIMELINE_MARGIN_LEFT = 170;
 const TIMELINE_MARGIN_RIGHT = 50;
 const TIMELINE_TOP_LABEL_Y = 16;
-const TIMELINE_LANE_TOP = 260;
-const TIMELINE_LANE_SPACING = 19;
+/** Y of the research lane; lower = whole project-lane stack shifts down in the SVG. */
+const TIMELINE_LANE_TOP = 350;
+const TIMELINE_LANE_SPACING = 26;
 /** Horizontal push for hover cards so they sit clear of the stem line (<text> is ~3px; this is a few lines more). */
 const HOVER_CARD_INSET_FROM_LINE_PX = 1;
 const DATA_MIN_YEAR = 2016;
 const DATA_MAX_YEAR = 2026.7;
 
-const TAG_BASE_COLORS: Record<ProjectTag, string> = {
-  llms_and_data: '#e4a823',
-  people_and_data: '#f1c245',
-  pretraining_data: '#dc8a22',
-  visualization: '#8c1d18',
-  interpretability: '#7344ad',
-  art: '#3f78bf',
-  real_people_using_ai: '#2f8c54',
-  not_ai: '#8ecf8b',
+/** Dot / lane colors: orange (tools), dark purple (research), green (creative work). */
+const CATEGORY_BASE_COLORS: Record<ProjectCategory, string> = {
+  research: '#e4a823',
+  tools: '#A52A2A',
+  creative_work: '#2F4F4F',
 };
 
-const TAG_TO_LANE: Record<ProjectTag, TimelineLane> = {
-  llms_and_data: 'data',
-  people_and_data: 'data',
-  pretraining_data: 'data',
-  visualization: 'visualization',
-  interpretability: 'interpretability',
-  art: 'art',
-  real_people_using_ai: 'real_people_using_ai',
-  not_ai: 'not_ai',
+const CATEGORY_TO_LANE: Record<ProjectCategory, TimelineCategoryLane> = {
+  research: 'research',
+  tools: 'tools',
+  creative_work: 'creative_work',
 };
 
-const LANE_ORDER: TimelineLane[] = [
-  'data',
-  'visualization',
-  'interpretability',
-  'real_people_using_ai',
-  'art',
-  'not_ai',
+const LANE_ORDER: TimelineCategoryLane[] = [
+  'research',
+  'tools',
+  'creative_work',
 ];
 
-const LANE_LABELS: Record<TimelineLane, string> = {
-  data: 'llms and data',
-  visualization: 'visualization',
-  interpretability: 'interpretability',
-  art: 'art',
-  real_people_using_ai: 'real people using AI',
-  not_ai: 'not AI',
+const LANE_LABELS: Record<TimelineCategoryLane, string> = {
+  research: 'Research',
+  tools: 'Tools',
+  creative_work: 'Art etc',
 };
-
-const NETWORK_BLOBS_ENABLED = false;
-
-type ProjectNetwork = {
-  id: string;
-  color: string;
-  mode: 'spokes' | 'complete';
-  center?: string;
-  members: string[];
-  arcOffset: number;
-};
-
-const PROJECT_NETWORKS: ProjectNetwork[] = [
-  {
-    id: 'kyd',
-    color: '#2aa4a4',
-    mode: 'spokes',
-    center: 'Know Your Data',
-    members: [
-      'Probing pretraining data',
-      'Data similarity is not enough to explain language model performance',
-      'SoUnD: analyzing social representation in unstructured data',
-      "A pretrainer's guide to training data",
-      'PALM + PALM2: RAI data analysis',
-    ],
-    arcOffset: -30,
-  },
-  {
-    id: 'embeddings',
-    color: '#8e6bc9',
-    mode: 'complete',
-    members: [
-      'Embedding projector',
-      'Visualizing and understanding the geometry of BERT',
-      'Waterfall of meaning',
-      'An interpretability illusion for BERT',
-      'Probing pretraining data',
-      "Who's asking? User personas and the mechanics of latent misalignment",
-      'Data similarity is not enough to explain language model performance',
-    ],
-    arcOffset: -60,
-  },
-  {
-    id: 'tools',
-    color: '#d48c42',
-    mode: 'complete',
-    members: [
-      'Embedding projector',
-      'SMILY: HITL tool for pathologists',
-      'Language interpretability tool',
-      'Know Your Data',
-      'Moodboard search',
-      'Linguistic Lens',
-      'Automatic Histograms',
-      'LLM Comparator',
-    ],
-    arcOffset: 45,
-  },
-];
 
 function normalizeTitle(value: string): string {
   return value
@@ -274,11 +198,20 @@ function inferPublicationStatus(project: Project): boolean {
   });
 }
 
-function laneYForTags(tags: ProjectTag[]): number {
+/** Vertical lane: mean of deduped category lane indices (can fall between band lines). */
+function laneYForCategories(categories: ProjectCategory[]): number {
   const indices = Array.from(
-    new Set(tags.map((tag) => TAG_TO_LANE[tag]).map((lane) => LANE_ORDER.indexOf(lane)))
+    new Set(
+      categories
+        .map((c) => CATEGORY_TO_LANE[c])
+        .map((lane) => LANE_ORDER.indexOf(lane))
+    )
   );
-  const meanIndex = indices.reduce((sum, index) => sum + index, 0) / Math.max(indices.length, 1);
+  if (indices.length === 0) {
+    return TIMELINE_LANE_TOP;
+  }
+  const meanIndex =
+    indices.reduce((sum, index) => sum + index, 0) / indices.length;
   return TIMELINE_LANE_TOP + meanIndex * TIMELINE_LANE_SPACING;
 }
 
@@ -295,8 +228,8 @@ function rgbToHex([r, g, b]: [number, number, number]): string {
   return `#${toHex(Math.round(r))}${toHex(Math.round(g))}${toHex(Math.round(b))}`;
 }
 
-function blendTagColor(tags: ProjectTag[]): string {
-  const colors = tags.map((tag) => hexToRgb(TAG_BASE_COLORS[tag]));
+function blendCategoryColor(categories: ProjectCategory[]): string {
+  const colors = categories.map((c) => hexToRgb(CATEGORY_BASE_COLORS[c]));
   const [r, g, b] = colors.reduce(
     (sum, [cr, cg, cb]) => [sum[0] + cr, sum[1] + cg, sum[2] + cb] as [number, number, number],
     [0, 0, 0]
@@ -308,15 +241,6 @@ function blendTagColor(tags: ProjectTag[]): string {
 function darkenColor(hexColor: string, factor = 0.7): string {
   const [r, g, b] = hexToRgb(hexColor);
   return rgbToHex([r * factor, g * factor, b * factor]);
-}
-
-function hashOffset(input: string, maxMagnitude: number): number {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    hash = (hash << 5) - hash + input.charCodeAt(i);
-    hash |= 0;
-  }
-  return (hash % (maxMagnitude * 2 + 1)) - maxMagnitude;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -333,6 +257,10 @@ export class TimelineComponent extends LitElement {
 
   @state()
   private hoveredProjectName: string | null = null;
+
+  /** When set, timeline items not in this network are dimmed. */
+  @state()
+  private hoveredNetworkId: ProjectNetwork | null = null;
 
   @state()
   private hoveredCardHeight = 0;
@@ -535,22 +463,21 @@ export class TimelineComponent extends LitElement {
       );
       const labelHeight = labelPaddingY * 2 + lines.length * lineHeight;
       const kindText = item.isPublication ? 'paper' : 'proj';
-      const lanesMidY = (lanesTop + lanesBottom) / 2;
+      // Art etc (bottom lane) → labels below; research & tools → labels above.
+      const downLabelThreshold =
+        lanesTop + (LANE_ORDER.length - 1.5) * TIMELINE_LANE_SPACING;
       const initialDir: 'up' | 'down' =
-        item.laneY <= lanesMidY ? 'up' : 'down';
+        item.laneY >= downLabelThreshold ? 'down' : 'up';
       const initialSide: 'left' | 'right' = this.hashedBit(
         'h:' + item.project.name
       )
         ? 'right'
         : 'left';
-      const otherDir: 'up' | 'down' = initialDir === 'up' ? 'down' : 'up';
       const otherSide: 'left' | 'right' =
         initialSide === 'right' ? 'left' : 'right';
       const variations: Array<{ direction: 'up' | 'down'; side: 'left' | 'right' }> = [
         { direction: initialDir, side: initialSide },
         { direction: initialDir, side: otherSide },
-        { direction: otherDir, side: initialSide },
-        { direction: otherDir, side: otherSide },
       ];
       const stepSize = labelHeight + labelGap;
 
@@ -561,6 +488,96 @@ export class TimelineComponent extends LitElement {
         const offset = attempt * stepSize;
         for (const strict of [true, false]) {
           for (const variation of variations) {
+            const { direction, side } = variation;
+            const y =
+              direction === 'up'
+                ? subjectAreaTop - labelHeight - offset
+                : subjectAreaBottom + offset;
+            if (direction === 'up' && y < minY) {
+              continue;
+            }
+            if (direction === 'down' && y + labelHeight > maxY) {
+              continue;
+            }
+            const rectX = side === 'right' ? item.x : item.x - labelWidth;
+            const rect = {
+              x: rectX,
+              y,
+              width: labelWidth,
+              height: labelHeight,
+            };
+            const inflated = {
+              x: rect.x - overlapPad,
+              y: rect.y - overlapPad,
+              width: rect.width + overlapPad * 2,
+              height: rect.height + overlapPad * 2,
+            };
+            const overlap = occupied.some((placedRect) =>
+              this.rectsOverlap(inflated, placedRect)
+            );
+            if (overlap) {
+              continue;
+            }
+            const candidateLine = {
+              x: item.x,
+              y1: direction === 'down' ? item.laneY : y,
+              y2: direction === 'down' ? y + labelHeight : item.laneY,
+            };
+            if (strict) {
+              const newLineCrossesText = occupied.some(
+                (placedRect) =>
+                  candidateLine.x > placedRect.x &&
+                  candidateLine.x < placedRect.x + placedRect.width &&
+                  candidateLine.y1 < placedRect.y + placedRect.height &&
+                  candidateLine.y2 > placedRect.y
+              );
+              if (newLineCrossesText) {
+                continue;
+              }
+              const textCrossesExistingLine = occupiedLines.some(
+                (line) =>
+                  line.x > rect.x &&
+                  line.x < rect.x + rect.width &&
+                  line.y1 < rect.y + rect.height &&
+                  line.y2 > rect.y
+              );
+              if (textCrossesExistingLine) {
+                continue;
+              }
+            }
+            chosen = {
+              item,
+              x: item.x,
+              y,
+              width: labelWidth,
+              height: labelHeight,
+              direction,
+              side,
+              lines,
+              kindText,
+            };
+            chosenRect = rect;
+            chosenLine = candidateLine;
+            break;
+          }
+          if (chosen) {
+            break;
+          }
+        }
+      }
+
+      const fallbackDir: 'up' | 'down' = initialDir === 'up' ? 'down' : 'up';
+      const fallbackVariations: Array<{
+        direction: 'up' | 'down';
+        side: 'left' | 'right';
+      }> = [
+        { direction: fallbackDir, side: initialSide },
+        { direction: fallbackDir, side: otherSide },
+      ];
+      for (let attempt = 0; attempt < 40 && !chosen; attempt++) {
+        const offset = attempt * stepSize;
+        for (const strict of [true, false]) {
+          for (const variation of fallbackVariations) {
             const { direction, side } = variation;
             const y =
               direction === 'up'
@@ -708,6 +725,13 @@ export class TimelineComponent extends LitElement {
     return 0.68;
   }
 
+  private networkHighlightFactor(project: Project): number {
+    if (!this.hoveredNetworkId) {
+      return 1;
+    }
+    return project.networks.includes(this.hoveredNetworkId) ? 1 : 0.12;
+  }
+
   private computeTimelineItems(): TimelineItem[] {
     const visibleRanks = new Map<string, number>();
     let rank = 0;
@@ -728,12 +752,9 @@ export class TimelineComponent extends LitElement {
       );
       const isPublication = inferPublicationStatus(project);
       const citationCount = scholarMetadata?.citations ?? 10;
-      const dotColor = blendTagColor(project.tags);
+      const dotColor = blendCategoryColor(project.categories);
       const strokeColor = darkenColor(dotColor);
-      const artLaneY = TIMELINE_LANE_TOP + LANE_ORDER.indexOf('art') * TIMELINE_LANE_SPACING;
-      const laneY = project.tags.includes('art')
-        ? artLaneY
-        : laneYForTags(project.tags) + hashOffset(`${project.name}-y`, 6);
+      const laneY = laneYForCategories(project.categories);
       const x = this.xForYear(decimalYear);
       const hiddenFromMain = Boolean(project.hide_in_main_list);
       const rankIndex = visibleRanks.get(project.name);
@@ -832,6 +853,17 @@ export class TimelineComponent extends LitElement {
 
   override render() {
     const timelineItems = this.computeTimelineItems();
+    /** Larger dots first so smaller dots paint on top (SVG has no z-index). */
+    const timelineItemsByDotSize = [...timelineItems].sort((a, b) => {
+      const ra =
+        this.importanceRadiusForItem(a) * this.scaleForItem(a, timelineItems);
+      const rb =
+        this.importanceRadiusForItem(b) * this.scaleForItem(b, timelineItems);
+      if (rb !== ra) {
+        return rb - ra;
+      }
+      return a.project.name.localeCompare(b.project.name);
+    });
     const persistentLabels = this.layoutPersistentLabels(timelineItems);
     const areaTop = 50;
     const areaBottom = 115;
@@ -977,16 +1009,6 @@ export class TimelineComponent extends LitElement {
                 fill='url(#area-edge-fade)'
               ></rect>
             </mask>
-            <filter id='network-blob' x='-20%' y='-50%' width='140%' height='200%'>
-              <feGaussianBlur in='SourceGraphic' stdDeviation='14'></feGaussianBlur>
-              <feColorMatrix
-                type='matrix'
-                values='1 0 0 0 0
-                        0 1 0 0 0
-                        0 0 1 0 0
-                        0 0 0 14 -6'
-              ></feColorMatrix>
-            </filter>
           </defs>
 
           <rect x='0' y='0' width='${this.timelineWidth}' height='${TIMELINE_HEIGHT}' fill='#ffffff'></rect>
@@ -1151,201 +1173,7 @@ export class TimelineComponent extends LitElement {
             `
           )}
 
-          ${(() => {
-            const byName = new Map(
-              timelineItems.map((item) => [item.project.name, item])
-            );
-            const computeMst = (
-              members: TimelineItem[]
-            ): Array<[TimelineItem, TimelineItem]> => {
-              if (members.length < 2) return [];
-              const dist = (a: TimelineItem, b: TimelineItem) =>
-                Math.hypot(a.x - b.x, a.laneY - b.laneY);
-              const candidates: Array<[number, TimelineItem, TimelineItem]> =
-                [];
-              for (let i = 0; i < members.length; i++) {
-                for (let j = i + 1; j < members.length; j++) {
-                  candidates.push([
-                    dist(members[i], members[j]),
-                    members[i],
-                    members[j],
-                  ]);
-                }
-              }
-              candidates.sort((a, b) => a[0] - b[0]);
-              const parent = new Map<TimelineItem, TimelineItem>();
-              for (const m of members) parent.set(m, m);
-              const find = (x: TimelineItem): TimelineItem => {
-                let r = x;
-                while (parent.get(r) !== r) r = parent.get(r)!;
-                let cur = x;
-                while (parent.get(cur) !== r) {
-                  const next = parent.get(cur)!;
-                  parent.set(cur, r);
-                  cur = next;
-                }
-                return r;
-              };
-              const out: Array<[TimelineItem, TimelineItem]> = [];
-              for (const [, a, b] of candidates) {
-                const ra = find(a);
-                const rb = find(b);
-                if (ra !== rb) {
-                  parent.set(ra, rb);
-                  out.push([a, b]);
-                  if (out.length === members.length - 1) break;
-                }
-              }
-              return out;
-            };
-            const computeEdges = (
-              network: ProjectNetwork,
-              members: TimelineItem[]
-            ): Array<[TimelineItem, TimelineItem]> => {
-              if (network.mode === 'spokes' && network.center) {
-                const center = byName.get(network.center);
-                const edges: Array<[TimelineItem, TimelineItem]> = [];
-                if (center) {
-                  for (const member of members) {
-                    if (member !== center) {
-                      edges.push([center, member]);
-                    }
-                  }
-                }
-                return edges;
-              }
-              return computeMst(members);
-            };
-            // For each edge, compute a quadratic-bezier control point that
-            // pushes the curve away from non-member dots that the straight
-            // line would otherwise pass too close to.
-            const routeEdge = (
-              a: TimelineItem,
-              b: TimelineItem,
-              obstacles: TimelineItem[]
-            ): { cx: number; cy: number } => {
-              const ax = a.x;
-              const ay = a.laneY;
-              const bx = b.x;
-              const by = b.laneY;
-              const mx = (ax + bx) / 2;
-              const my = (ay + by) / 2;
-              const dx = bx - ax;
-              const dy = by - ay;
-              const len = Math.hypot(dx, dy) || 1;
-              const px = -dy / len;
-              const py = dx / len;
-              let signedDisp = 0;
-              for (const obs of obstacles) {
-                const ox = obs.x;
-                const oy = obs.laneY;
-                const t = ((ox - ax) * dx + (oy - ay) * dy) / (len * len);
-                if (t < 0.05 || t > 0.95) continue;
-                const projX = ax + t * dx;
-                const projY = ay + t * dy;
-                const distLine = Math.hypot(ox - projX, oy - projY);
-                const obsRadius = this.importanceRadiusForItem(obs) + 18;
-                if (distLine > obsRadius) continue;
-                const obsPerp = (ox - ax) * px + (oy - ay) * py;
-                const sideSign = obsPerp >= 0 ? 1 : -1;
-                const strength = (obsRadius - distLine) * 0.7;
-                signedDisp -= sideSign * strength;
-              }
-              const maxDisp = Math.min(len * 0.35, 60);
-              if (signedDisp > maxDisp) signedDisp = maxDisp;
-              if (signedDisp < -maxDisp) signedDisp = -maxDisp;
-              return {
-                cx: mx + 2 * signedDisp * px,
-                cy: my + 2 * signedDisp * py,
-              };
-            };
-            const blobNetworks = PROJECT_NETWORKS.filter(
-              (n) => n.id !== 'kyd'
-            );
-            const lineNetworks = PROJECT_NETWORKS.filter(
-              (n) => n.id === 'kyd'
-            );
-            return svg`
-              ${NETWORK_BLOBS_ENABLED
-                ? blobNetworks.map((network) => {
-                    const members = network.members
-                      .map((name) => byName.get(name))
-                      .filter(
-                        (item): item is TimelineItem => item !== undefined
-                      );
-                    if (members.length === 0) {
-                      return null;
-                    }
-                    const memberSet = new Set(members);
-                    const obstacles = timelineItems.filter(
-                      (item) => !memberSet.has(item)
-                    );
-                    const edges = computeEdges(network, members);
-                    return svg`
-                      <g
-                        class='timeline-network-blob'
-                        filter='url(#network-blob)'
-                        opacity='0.38'
-                      >
-                        ${edges.map(([a, b]) => {
-                          const { cx, cy } = routeEdge(a, b, obstacles);
-                          const d = `M ${a.x} ${a.laneY} Q ${cx} ${cy} ${b.x} ${b.laneY}`;
-                          return svg`
-                            <path
-                              d=${d}
-                              stroke=${network.color}
-                              stroke-width='28'
-                              stroke-linecap='round'
-                              fill='none'
-                            ></path>
-                          `;
-                        })}
-                        ${members.map(
-                          (m) => svg`
-                            <circle
-                              cx=${m.x}
-                              cy=${m.laneY}
-                              r='26'
-                              fill=${network.color}
-                            ></circle>
-                          `
-                        )}
-                      </g>
-                    `;
-                  })
-                : null}
-              ${lineNetworks.map((network) => {
-                const members = network.members
-                  .map((name) => byName.get(name))
-                  .filter(
-                    (item): item is TimelineItem => item !== undefined
-                  );
-                if (members.length === 0) {
-                  return null;
-                }
-                const edges = computeEdges(network, members);
-                return svg`
-                  <g class='timeline-network-lines'>
-                    ${edges.map(
-                      ([a, b]) => svg`
-                        <line
-                          x1=${a.x}
-                          y1=${a.laneY}
-                          x2=${b.x}
-                          y2=${b.laneY}
-                          stroke='#888'
-                          stroke-width='1'
-                          stroke-opacity='0.55'
-                        ></line>
-                      `
-                    )}
-                  </g>
-                `;
-              })}
-            `;
-          })()}
-
-          ${timelineItems.map(
+          ${timelineItemsByDotSize.map(
             (item) => svg`
               <g
                 class='timeline-dot-group'
@@ -1373,9 +1201,13 @@ export class TimelineComponent extends LitElement {
                     cy='0'
                     r=${this.importanceRadiusForItem(item)}
                     fill=${item.dotColor}
-                    fill-opacity=${item.project.name === this.hoveredProjectName
-                      ? Math.min(1, this.itemOpacity(item) + 0.32)
-                      : this.itemOpacity(item)}
+                    fill-opacity=${(() => {
+                      const base =
+                        item.project.name === this.hoveredProjectName
+                          ? Math.min(1, this.itemOpacity(item) + 0.32)
+                          : this.itemOpacity(item);
+                      return base * this.networkHighlightFactor(item.project);
+                    })()}
                     stroke='none'
                     stroke-width='0'
                   >
@@ -1429,9 +1261,19 @@ export class TimelineComponent extends LitElement {
             // Solid half-arc (stem side) always. On hover: full <circle> on top, same r, dash-in.
             const lineSideSweep = label.direction === 'down' ? 0 : 1;
             const halfD = `M ${cx - ringRadius} ${cy} A ${ringRadius} ${ringRadius} 0 0 ${lineSideSweep} ${cx + ringRadius} ${cy}`;
+            const netDim = this.networkHighlightFactor(label.item.project);
+            // CSS sets stroke-opacity on these classes; inline style wins so network dimming applies.
+            const stemStrokeBase = isHovered
+              ? 1
+              : label.direction === 'down'
+                ? 0.35
+                : 0.75;
+            const stemStrokeOpacity = stemStrokeBase * netDim;
+            const stemStrokeStyle = `stroke-opacity: ${stemStrokeOpacity}`;
             return svg`
               <line
                 class=${lineClass}
+                style=${stemStrokeStyle}
                 x1=${cx}
                 y1=${y1}
                 x2=${cx}
@@ -1440,6 +1282,7 @@ export class TimelineComponent extends LitElement {
               ></line>
               <path
                 class=${ringClass}
+                style=${stemStrokeStyle}
                 d=${halfD}
                 fill='none'
                 stroke=${label.item.dotColor}
@@ -1450,6 +1293,7 @@ export class TimelineComponent extends LitElement {
                 ? svg`
               <circle
                 class=${[ringClass, 'timeline-persistent-ring-full'].join(' ')}
+                style=${stemStrokeStyle}
                 cx=${cx}
                 cy=${cy}
                 r=${ringRadius}
@@ -1471,9 +1315,11 @@ export class TimelineComponent extends LitElement {
             const groupClass = isHovered
               ? 'timeline-persistent-label hovered'
               : 'timeline-persistent-label';
+            const labelNetDim = this.networkHighlightFactor(label.item.project);
             return svg`
             <g
               class=${groupClass}
+              opacity=${labelNetDim}
               @mouseenter=${() => {
                 this.hoveredProjectName = label.item.project.name;
               }}
@@ -1503,6 +1349,35 @@ export class TimelineComponent extends LitElement {
           `;
           })}
         </svg>
+        <div
+          class='timeline-network-chips'
+          aria-label='Highlight timeline dots by project network'
+          @mouseleave=${() => {
+            this.hoveredNetworkId = null;
+          }}
+        >
+          ${PROJECT_NETWORK_ORDER.map(
+            (id) => html`
+              <button
+                type='button'
+                class=${`timeline-network-chip${
+                  this.hoveredNetworkId === id ? ' active' : ''
+                }`}
+                @mouseenter=${() => {
+                  this.hoveredNetworkId = id;
+                }}
+                @focus=${() => {
+                  this.hoveredNetworkId = id;
+                }}
+                @blur=${() => {
+                  this.hoveredNetworkId = null;
+                }}
+              >
+                ${PROJECT_NETWORK_LABELS[id]}
+              </button>
+            `
+          )}
+        </div>
         ${persistentLabels.map((label) => {
           const isHovered =
             label.item.project.name === this.hoveredProjectName;
