@@ -13,6 +13,14 @@ import {
   PROJECT_NETWORK_ORDER,
 } from './projects';
 
+/**
+ * Chips rendered in the timeline UI. `kyd` is omitted on purpose; it stays in
+ * `PROJECT_NETWORK_ORDER` and on each project’s `networks` so filtering / data are unchanged.
+ */
+const PROJECT_NETWORK_CHIP_ORDER: ProjectNetwork[] = PROJECT_NETWORK_ORDER.filter(
+  (id) => id !== 'kyd'
+);
+
 type TimelineSizeMode = 'importance' | 'publication';
 type TimelineCategoryLane = 'research' | 'tools' | 'creative_work';
 
@@ -45,8 +53,15 @@ const TIMELINE_HEIGHT = 700;
 const TIMELINE_MARGIN_LEFT = 170;
 const TIMELINE_MARGIN_RIGHT = 50;
 const TIMELINE_TOP_LABEL_Y = 16;
+/**
+ * Minimum y for the top edge of persistent labels placed *above* lanes.
+ * Must be below the year-number row but high enough that labels can sit between
+ * the year axis and subjectAreaTop when TIMELINE_LANE_TOP is small (a fixed minY
+ * like 140 rejects every "up" placement in that case, so all labels pile up below).
+ */
+const PERSISTENT_LABEL_MIN_Y = TIMELINE_TOP_LABEL_Y + 26;
 /** Y of the research lane; lower = whole project-lane stack shifts down in the SVG. */
-const TIMELINE_LANE_TOP = 350;
+const TIMELINE_LANE_TOP = 150;
 const TIMELINE_LANE_SPACING = 26;
 /** Horizontal push for hover cards so they sit clear of the stem line (<text> is ~3px; this is a few lines more). */
 const HOVER_CARD_INSET_FROM_LINE_PX = 1;
@@ -438,7 +453,7 @@ export class TimelineComponent extends LitElement {
     const subjectGap = 30;
     const labelGap = 5;
     const overlapPad = 3;
-    const minY = 140;
+    const minY = PERSISTENT_LABEL_MIN_Y;
     const maxY = TIMELINE_HEIGHT - 8;
     const lanesTop = TIMELINE_LANE_TOP;
     const lanesBottom =
@@ -809,46 +824,60 @@ export class TimelineComponent extends LitElement {
     return items;
   }
 
-  private smoothCurveCommands(
-    points: Array<{ x: number; y: number }>,
-    tension = 0.45
+  /** Piecewise-constant (horizontal) top edge, flat bottom — employment band. */
+  private stepAreaPathFlatBottom(
+    breakYears: number[],
+    topYAtMid: (midYear: number) => number,
+    bottomY: number
   ): string {
-    if (points.length < 2) {
+    const n = breakYears.length - 1;
+    if (n < 0) {
       return '';
     }
-    const commands: string[] = [];
-    for (let i = 1; i < points.length - 1; i++) {
-      const corner = points[i];
-      const next = points[i + 1];
-      const midX = (corner.x + next.x) / 2;
-      const midY = (corner.y + next.y) / 2;
-      const ctrlX = midX + (corner.x - midX) * tension;
-      const ctrlY = midY + (corner.y - midY) * tension;
-      commands.push(`Q ${ctrlX} ${ctrlY} ${midX} ${midY}`);
+    const X = (i: number) => this.xForYear(breakYears[i]);
+    const top: number[] = [];
+    for (let s = 0; s < n; s++) {
+      const mid = (breakYears[s] + breakYears[s + 1]) / 2;
+      top.push(topYAtMid(mid));
     }
-    const last = points[points.length - 1];
-    const penultimate = points[points.length - 2];
-    const ctrlX = last.x + (penultimate.x - last.x) * tension;
-    const ctrlY = last.y + (penultimate.y - last.y) * tension;
-    commands.push(`Q ${ctrlX} ${ctrlY} ${last.x} ${last.y}`);
-    return commands.join(' ');
+    let d = `M ${X(0)} ${top[0]}`;
+    for (let s = 0; s < n - 1; s++) {
+      d += ` L ${X(s + 1)} ${top[s]} L ${X(s + 1)} ${top[s + 1]}`;
+    }
+    d += ` L ${X(n)} ${top[n - 1]}`;
+    d += ` L ${X(n)} ${bottomY} L ${X(0)} ${bottomY} Z`;
+    return d;
   }
 
-  private smoothAreaPath(
-    topBoundary: Array<{ x: number; y: number }>,
-    bottomBoundary: Array<{ x: number; y: number }>
+  /** Step top and step bottom (e.g. education stack on top of Google). */
+  private stepAreaPathVariableBottom(
+    breakYears: number[],
+    topYAtMid: (midYear: number) => number,
+    bottomYAtMid: (midYear: number) => number
   ): string {
-    if (topBoundary.length < 2 || bottomBoundary.length < 2) {
+    const n = breakYears.length - 1;
+    if (n < 0) {
       return '';
     }
-    const reversedBottom = [...bottomBoundary].reverse();
-    return [
-      `M ${topBoundary[0].x} ${topBoundary[0].y}`,
-      this.smoothCurveCommands(topBoundary),
-      `L ${reversedBottom[0].x} ${reversedBottom[0].y}`,
-      this.smoothCurveCommands(reversedBottom),
-      'Z',
-    ].join(' ');
+    const X = (i: number) => this.xForYear(breakYears[i]);
+    const top: number[] = [];
+    const bot: number[] = [];
+    for (let s = 0; s < n; s++) {
+      const mid = (breakYears[s] + breakYears[s + 1]) / 2;
+      top.push(topYAtMid(mid));
+      bot.push(bottomYAtMid(mid));
+    }
+    let d = `M ${X(0)} ${top[0]}`;
+    for (let s = 0; s < n - 1; s++) {
+      d += ` L ${X(s + 1)} ${top[s]} L ${X(s + 1)} ${top[s + 1]}`;
+    }
+    d += ` L ${X(n)} ${top[n - 1]}`;
+    d += ` L ${X(n)} ${bot[n - 1]}`;
+    for (let s = n - 1; s >= 1; s--) {
+      d += ` L ${X(s)} ${bot[s]} L ${X(s)} ${bot[s - 1]}`;
+    }
+    d += ` L ${X(0)} ${bot[0]} Z`;
+    return d;
   }
 
   override render() {
@@ -865,8 +894,8 @@ export class TimelineComponent extends LitElement {
       return a.project.name.localeCompare(b.project.name);
     });
     const persistentLabels = this.layoutPersistentLabels(timelineItems);
-    const areaTop = 50;
-    const areaBottom = 115;
+    const areaTop = 20;
+    const areaBottom = 500;
     const areaHeight = areaBottom - areaTop;
     const areaScale = areaHeight;
     const yearTicks: number[] = [];
@@ -886,10 +915,19 @@ export class TimelineComponent extends LitElement {
     const googleBrainStartYear = 2017 + 8 / 12; // Sept 2017
     const googleDropYear = 2024 + 4 / 12;
     const uwStartYear = 2024 + 8 / 12;
-    const areaSampleYears: number[] = [];
-    for (let year = DATA_MIN_YEAR; year <= DATA_MAX_YEAR + 0.001; year += 1 / 12) {
-      areaSampleYears.push(year);
-    }
+    /** Sorted times where employment / education levels change (step chart corners). */
+    const areaBreakYears = Array.from(
+      new Set([
+        DATA_MIN_YEAR,
+        brownBsEndYear,
+        googleInternEndYear,
+        brownMastersEndYear,
+        googleBrainStartYear,
+        googleDropYear,
+        uwStartYear,
+        DATA_MAX_YEAR,
+      ])
+    ).sort((a, b) => a - b);
 
     const googleFractionAtYear = (year: number): number => {
       const isIntern = year >= googleInternStartYear && year < googleInternEndYear;
@@ -907,16 +945,19 @@ export class TimelineComponent extends LitElement {
 
     const yGoogleTopAt = (year: number) =>
       areaBottom - googleFractionAtYear(year) * areaScale;
-    const yEduTopAt = (year: number) =>
-      yGoogleTopAt(year) - educationFractionAtYear(year) * areaScale;
-    const googleBandCenterY = (year: number) =>
-      (areaBottom + yGoogleTopAt(year)) / 2;
-    const eduBandCenterY = (year: number) =>
-      (yEduTopAt(year) + yGoogleTopAt(year)) / 2;
     /** Bottom of an education sliver (just above the Google band) at this year. */
     const eduBandTagY = (year: number) => yGoogleTopAt(year) - 2;
     // Google role sublabels sit on the bottom of the Google (employment) bar; x = period center.
     const googleSubY = areaBottom - 3;
+    /** Hero labels use dominant-baseline middle (~22px); tags/subln ~9px caps above baseline. */
+    const areaHeroHalf = 11;
+    const areaSmallCapRise = 11;
+    const areaHeroGapAboveSmallText = 5;
+    const yGoogleHero =
+      googleSubY -
+      areaSmallCapRise -
+      areaHeroGapAboveSmallText -
+      areaHeroHalf;
     const xIntern = this.xForYear(
       (googleInternStartYear + googleInternEndYear) / 2
     );
@@ -926,55 +967,37 @@ export class TimelineComponent extends LitElement {
 
     const googleSpanMid = (googleInternStartYear + DATA_MAX_YEAR) / 2;
     const xGoogle = this.xForYear(googleSpanMid);
-    const yGoogleHero = googleBandCenterY(googleSpanMid);
     const wBs = (brownBsStartYear + brownBsEndYear) / 2;
     const wMs = (brownMastersStartYear + brownMastersEndYear) / 2;
     const wUw = (uwStartYear + DATA_MAX_YEAR) / 2;
+    const yBrownHero =
+      eduBandTagY(wMs) -
+      areaSmallCapRise -
+      areaHeroGapAboveSmallText -
+      areaHeroHalf;
+    const yUwHero =
+      eduBandTagY(wUw) -
+      areaSmallCapRise -
+      areaHeroGapAboveSmallText -
+      areaHeroHalf;
 
-    const googleTopBoundary = areaSampleYears.map((year) => {
-      const googleFraction = googleFractionAtYear(year);
-      return { x: this.xForYear(year), y: areaBottom - googleFraction * areaScale };
-    });
-    const googleBottomBoundary = areaSampleYears.map((year) => ({
-      x: this.xForYear(year),
-      y: areaBottom,
-    }));
-
-    const educationTopBoundary = areaSampleYears.map((year) => {
-      const googleFraction = googleFractionAtYear(year);
-      const educationFraction = educationFractionAtYear(year);
-      const googleTop = areaBottom - googleFraction * areaScale;
-      return { x: this.xForYear(year), y: googleTop - educationFraction * areaScale };
-    });
-    const educationBottomBoundary = areaSampleYears.map((year) => {
-      const googleFraction = googleFractionAtYear(year);
-      return { x: this.xForYear(year), y: areaBottom - googleFraction * areaScale };
-    });
-
-    const googlePath = this.smoothAreaPath(googleTopBoundary, googleBottomBoundary);
-    const educationPath = this.smoothAreaPath(educationTopBoundary, educationBottomBoundary);
+    const googlePath = this.stepAreaPathFlatBottom(
+      areaBreakYears,
+      (midYear) => areaBottom - googleFractionAtYear(midYear) * areaScale,
+      areaBottom
+    );
+    const educationPath = this.stepAreaPathVariableBottom(
+      areaBreakYears,
+      (midYear) => {
+        const g = googleFractionAtYear(midYear);
+        const e = educationFractionAtYear(midYear);
+        const googleTop = areaBottom - g * areaScale;
+        return googleTop - e * areaScale;
+      },
+      (midYear) => areaBottom - googleFractionAtYear(midYear) * areaScale
+    );
 
     return html`
-      <div class='timeline-controls font-sm'>
-        <span class='timeline-control-label'>dot size:</span>
-        <span class=${this.sizeMode === 'importance' ? 'timeline-mode active' : 'timeline-mode'}>
-          favorites
-        </span>
-        <label class='timeline-switch'>
-          <input
-            type='checkbox'
-            ?checked=${this.sizeMode === 'publication'}
-            @change=${(event: Event) => {
-              const checked = (event.target as HTMLInputElement).checked;
-              this.sizeMode = checked ? 'publication' : 'importance';
-            }}
-          />
-          <span class='timeline-switch-track'></span>
-        </label>
-        <span class=${this.sizeMode === 'publication' ? 'timeline-mode active' : 'timeline-mode'}>
-          citations
-        </span>
-      </div>
       <div class='timeline-scroll'>
         <svg class='timeline-svg' viewBox='0 0 ${this.timelineWidth} ${TIMELINE_HEIGHT}' role='img'>
           <desc>Timeline of projects and publications by theme and time.</desc>
@@ -1017,20 +1040,20 @@ export class TimelineComponent extends LitElement {
             <path
               d=${googlePath}
               fill='#7289a8'
-              fill-opacity='0.8'
+              fill-opacity='0.2'
               stroke='#ffffff'
               stroke-opacity='0.95'
               stroke-width='2.5'
-              stroke-linejoin='round'
+              stroke-linejoin='miter'
             ></path>
             <path
               d=${educationPath}
               fill='#7289a8'
-              fill-opacity='0.4'
+              fill-opacity='0.1'
               stroke='#ffffff'
               stroke-opacity='0.95'
               stroke-width='2.5'
-              stroke-linejoin='round'
+              stroke-linejoin='miter'
             ></path>
           </g>
 
@@ -1115,7 +1138,7 @@ export class TimelineComponent extends LitElement {
               <text
                 class='timeline-area-hero'
                 x=${this.xForYear(wMs)}
-                y=${eduBandCenterY(wMs)}
+                y=${yBrownHero}
                 text-anchor='middle'
                 dominant-baseline='middle'
               >
@@ -1133,7 +1156,7 @@ export class TimelineComponent extends LitElement {
               <text
                 class='timeline-area-hero'
                 x=${this.xForYear(wUw)}
-                y=${eduBandCenterY(wUw)}
+                y=${yUwHero}
                 text-anchor='middle'
                 dominant-baseline='middle'
               >
@@ -1349,34 +1372,76 @@ export class TimelineComponent extends LitElement {
           `;
           })}
         </svg>
-        <div
-          class='timeline-network-chips'
-          aria-label='Highlight timeline dots by project network'
-          @mouseleave=${() => {
-            this.hoveredNetworkId = null;
-          }}
-        >
-          ${PROJECT_NETWORK_ORDER.map(
-            (id) => html`
-              <button
-                type='button'
-                class=${`timeline-network-chip${
-                  this.hoveredNetworkId === id ? ' active' : ''
-                }`}
-                @mouseenter=${() => {
-                  this.hoveredNetworkId = id;
-                }}
-                @focus=${() => {
-                  this.hoveredNetworkId = id;
-                }}
-                @blur=${() => {
-                  this.hoveredNetworkId = null;
-                }}
+        <div class='timeline-bottom-controls'>
+          <div class='timeline-tags-block'>
+            <div class='timeline-network-chips-label' id='timeline-themes-label'>
+              Themes
+            </div>
+            <div
+              class='timeline-network-chips'
+              role='group'
+              aria-labelledby='timeline-themes-label'
+              @mouseleave=${() => {
+                this.hoveredNetworkId = null;
+              }}
+            >
+              ${PROJECT_NETWORK_CHIP_ORDER.map(
+                (id) => html`
+                  <button
+                    type='button'
+                    class=${`timeline-network-chip${
+                      this.hoveredNetworkId === id ? ' active' : ''
+                    }`}
+                    @mouseenter=${() => {
+                      this.hoveredNetworkId = id;
+                    }}
+                    @focus=${() => {
+                      this.hoveredNetworkId = id;
+                    }}
+                    @blur=${() => {
+                      this.hoveredNetworkId = null;
+                    }}
+                  >
+                    ${PROJECT_NETWORK_LABELS[id]}
+                  </button>
+                `
+              )}
+            </div>
+          </div>
+          <div
+            class='timeline-dot-size-row'
+            role='group'
+            aria-label='Dot size: favorites or citations'
+          >
+            <span class='timeline-dot-size-heading'>Dot size</span>
+            <div class='timeline-dot-size-toggle'>
+              <span
+                class=${this.sizeMode === 'importance'
+                  ? 'timeline-dot-size-option active'
+                  : 'timeline-dot-size-option'}
               >
-                ${PROJECT_NETWORK_LABELS[id]}
-              </button>
-            `
-          )}
+                favorites
+              </span>
+              <label class='timeline-switch timeline-switch--chip-scale'>
+                <input
+                  type='checkbox'
+                  ?checked=${this.sizeMode === 'publication'}
+                  @change=${(event: Event) => {
+                    const checked = (event.target as HTMLInputElement).checked;
+                    this.sizeMode = checked ? 'publication' : 'importance';
+                  }}
+                />
+                <span class='timeline-switch-track'></span>
+              </label>
+              <span
+                class=${this.sizeMode === 'publication'
+                  ? 'timeline-dot-size-option active'
+                  : 'timeline-dot-size-option'}
+              >
+                citations
+              </span>
+            </div>
+          </div>
         </div>
         ${persistentLabels.map((label) => {
           const isHovered =

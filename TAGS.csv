@@ -6,11 +6,11 @@ Toymaker,false,,,x,,,,,,
 Visualizing Distributions of Language Model Generations,false,x,x,,x,x,x,,,
 A gentle introduction to graph neural networks,false,x,,,,x,,,,
 Linguistic Lens,false,x,x,,x,x,,,
-Visualizing and understanding the geometry of BERT,false,x,,,x,x,x,,
+Visualizing and understanding the geometry of BERT,false,x,,,x,x,x,,,x
 Embedding projector,false,x,x,,x,x,x,,,x
 Language interpretability tool,false,x,x,,,,x,,
 Evaluating attribution for graph neural networks,true,x,,,,,x,,,
-An interpretability illusion for BERT,true,x,,,,,x,,
+An interpretability illusion for BERT,true,x,,,,,x,,,x
 LLM Comparator,false,x,x,,x,x,,,,
 Know Your Data,false,,x,,x,x,,,x,
 PALM + PALM2: RAI data analysis,false,x,,,x,,,,x,

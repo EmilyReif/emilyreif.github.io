@@ -218,7 +218,7 @@ export const projects: Project[] = [
     ],
     image: "bert.png",
     categories: ["research"],
-    networks: ["llms_and_data", "visualization", "interpretability"],
+    networks: ["llms_and_data", "visualization", "interpretability", "embeddings"],
   },
   {
     name: "Waterfall of meaning",
@@ -433,7 +433,7 @@ export const projects: Project[] = [
     links: [{ link: "https://arxiv.org/abs/2104.07143", name: "paper" }],
     hide_in_main_list: true,
     categories: ["research"],
-    networks: ["interpretability"],
+    networks: ["interpretability", "embeddings"],
   },
   {
     name: "Who's asking? User personas and the mechanics of latent misalignment",
