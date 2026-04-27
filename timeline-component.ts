@@ -1539,75 +1539,79 @@ export class TimelineComponent extends LitElement {
           })}
         </svg>
         <div class='timeline-bottom-controls'>
-          <div class='timeline-tags-block'>
-            <div class='timeline-network-chips-label' id='timeline-themes-label'>
-              Themes
+            <div class='timeline-tags-block'>
+              <div
+                class='timeline-network-chips-label'
+                id='timeline-themes-label'
+              >
+                Themes
+              </div>
+              <div
+                class='timeline-network-chips'
+                role='group'
+                aria-labelledby='timeline-themes-label'
+                @mouseleave=${() => {
+                  this.hoveredNetworkId = null;
+                }}
+              >
+                ${PROJECT_NETWORK_CHIP_ORDER.map(
+                  (id) => html`
+                    <button
+                      type='button'
+                      class=${`timeline-network-chip${
+                        this.hoveredNetworkId === id ? ' active' : ''
+                      }`}
+                      @mouseenter=${() => {
+                        this.hoveredNetworkId = id;
+                      }}
+                      @focus=${() => {
+                        this.hoveredNetworkId = id;
+                      }}
+                      @blur=${() => {
+                        this.hoveredNetworkId = null;
+                      }}
+                    >
+                      ${PROJECT_NETWORK_LABELS[id]}
+                    </button>
+                  `
+                )}
+              </div>
             </div>
             <div
-              class='timeline-network-chips'
+              class='timeline-dot-size-row'
               role='group'
-              aria-labelledby='timeline-themes-label'
-              @mouseleave=${() => {
-                this.hoveredNetworkId = null;
-              }}
+              aria-label='Dot size: favorites or citations'
             >
-              ${PROJECT_NETWORK_CHIP_ORDER.map(
-                (id) => html`
-                  <button
-                    type='button'
-                    class=${`timeline-network-chip${
-                      this.hoveredNetworkId === id ? ' active' : ''
-                    }`}
-                    @mouseenter=${() => {
-                      this.hoveredNetworkId = id;
+              <span class='timeline-dot-size-heading'>Dot size</span>
+              <div class='timeline-dot-size-toggle'>
+                <span
+                  class=${this.sizeMode === 'importance'
+                    ? 'timeline-dot-size-option active'
+                    : 'timeline-dot-size-option'}
+                >
+                  favorites
+                </span>
+                <label class='timeline-switch timeline-switch--chip-scale'>
+                  <input
+                    type='checkbox'
+                    ?checked=${this.sizeMode === 'publication'}
+                    @change=${(event: Event) => {
+                      const checked = (event.target as HTMLInputElement)
+                        .checked;
+                      this.sizeMode = checked ? 'publication' : 'importance';
                     }}
-                    @focus=${() => {
-                      this.hoveredNetworkId = id;
-                    }}
-                    @blur=${() => {
-                      this.hoveredNetworkId = null;
-                    }}
-                  >
-                    ${PROJECT_NETWORK_LABELS[id]}
-                  </button>
-                `
-              )}
+                  />
+                  <span class='timeline-switch-track'></span>
+                </label>
+                <span
+                  class=${this.sizeMode === 'publication'
+                    ? 'timeline-dot-size-option active'
+                    : 'timeline-dot-size-option'}
+                >
+                  citations
+                </span>
+              </div>
             </div>
-          </div>
-          <div
-            class='timeline-dot-size-row'
-            role='group'
-            aria-label='Dot size: favorites or citations'
-          >
-            <span class='timeline-dot-size-heading'>Dot size</span>
-            <div class='timeline-dot-size-toggle'>
-              <span
-                class=${this.sizeMode === 'importance'
-                  ? 'timeline-dot-size-option active'
-                  : 'timeline-dot-size-option'}
-              >
-                favorites
-              </span>
-              <label class='timeline-switch timeline-switch--chip-scale'>
-                <input
-                  type='checkbox'
-                  ?checked=${this.sizeMode === 'publication'}
-                  @change=${(event: Event) => {
-                    const checked = (event.target as HTMLInputElement).checked;
-                    this.sizeMode = checked ? 'publication' : 'importance';
-                  }}
-                />
-                <span class='timeline-switch-track'></span>
-              </label>
-              <span
-                class=${this.sizeMode === 'publication'
-                  ? 'timeline-dot-size-option active'
-                  : 'timeline-dot-size-option'}
-              >
-                citations
-              </span>
-            </div>
-          </div>
         </div>
         ${persistentLabels.map((label) => {
           const isHovered =

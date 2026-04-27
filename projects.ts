@@ -1,5 +1,8 @@
 import { TemplateResult, html } from "lit";
 
+import { collaboratorNameKey } from "./name-normalize";
+import { PALM1_COAUTHORS, PALM2_COAUTHORS } from "./palm-coauthors";
+
 /** Vertical lane on the timeline (color + y position). */
 export const PROJECT_CATEGORY_ORDER = [
   "research",
@@ -28,6 +31,26 @@ const categoryOrderIndex = new Map(
 const networkOrderIndex = new Map(
   PROJECT_NETWORK_ORDER.map((t, i) => [t, i] as const)
 );
+
+/** Dedupe for PaLM 1+2: same person can appear on both with slightly different spellings. */
+function uniqueByNormalizedName(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const v of values) {
+    const k = collaboratorNameKey(v);
+    if (seen.has(k)) {
+      continue;
+    }
+    seen.add(k);
+    out.push(v);
+  }
+  return out;
+}
+
+const PALM_COAUTHORS_UNION = uniqueByNormalizedName([
+  ...PALM1_COAUTHORS,
+  ...PALM2_COAUTHORS,
+]);
 
 export function sortProjectCategories(
   categories: ProjectCategory[]
@@ -84,6 +107,11 @@ export type Project = {
   categories: ProjectCategory[];
   /** Thematic networks (chip filter / highlight). */
   networks: ProjectNetwork[];
+  /**
+   * Co-authors and collaborators (excluding yourself), in a readable order; used for
+   * project copy and co-authorship frequency on the timeline.
+   */
+  collaborators: readonly string[];
   /** When true, excluded from the main Projects list (still in data for exports / tooling). */
   hide_in_main_list?: boolean;
   /**
@@ -173,6 +201,13 @@ export const projects: Project[] = [
     image: "llm_consistency_vis.png",
     categories: ["research", "tools"],
     networks: ["llms_and_data", "visualization", "interpretability"],
+    collaborators: [
+      "Claire Yang",
+      "Jared Hwang",
+      "Deniz Nazar",
+      "Noah A. Smith",
+      "Jeff Heer",
+    ],
   },
   {
     name: "PALM + PALM2: RAI data analysis",
@@ -184,6 +219,7 @@ export const projects: Project[] = [
     image: "topics.png",
     categories: ["research"],
     networks: ["llms_and_data", "kyd"],
+    collaborators: [...PALM_COAUTHORS_UNION],
     timelineVariants: [
       {
         key: "palm-rai-data",
@@ -213,6 +249,18 @@ export const projects: Project[] = [
     image: "pretraining.jpg",
     categories: ["research"],
     networks: ["llms_and_data", "kyd"],
+    collaborators: [
+      "Shayne Longpre",
+      "Gregory Yauney",
+      "Katherine Lee",
+      "Adam Roberts",
+      "Barret Zoph",
+      "Denny Zhou",
+      "Jason Wei",
+      "Kevin Robinson",
+      "David Mimno",
+      "Daphne Ippolito",
+    ],
   },
   {
     name: "A recipe for arbitrary text style transfer with LLMs",
@@ -228,6 +276,13 @@ export const projects: Project[] = [
     image: "style_transfer.png",
     categories: ["research"],
     networks: ["llms_and_data"],
+    collaborators: [
+      "Daphne Ippolito",
+      "Ann Yuan",
+      "Andy Coenen",
+      "Chris Callison-Burch",
+      "Jason Wei",
+    ],
   },
   {
     name: "A gentle introduction to graph neural networks",
@@ -236,6 +291,11 @@ export const projects: Project[] = [
     image: "gnn.png",
     categories: ["research"],
     networks: ["visualization"],
+    collaborators: [
+      "Benjamin Sanchez-Lengeling",
+      "Adam Pearce",
+      "Alexander B. Wiltschko",
+    ],
   },
   {
     name: "Visualizing and understanding the geometry of BERT",
@@ -257,6 +317,14 @@ export const projects: Project[] = [
     image: "bert.png",
     categories: ["research"],
     networks: ["llms_and_data", "visualization", "interpretability", "embeddings"],
+    collaborators: [
+      "Ann Yuan",
+      "Martin Wattenberg",
+      "Fernanda B. Viégas",
+      "Andy Coenen",
+      "Adam Pearce",
+      "Been Kim",
+    ],
   },
   {
     name: "Waterfall of meaning",
@@ -281,6 +349,14 @@ export const projects: Project[] = [
       "interpretability",
       "embeddings",
     ],
+    collaborators: [
+      "Nikhil Thorat",
+      "Martin Wattenberg",
+      "Lauren Hannah-Murphy",
+      "Tolga Bolukbasi",
+      "Mahima Pushkarna",
+      "Fernanda B. Viégas",
+    ],
   },
   {
     name: "Linguistic Lens",
@@ -300,6 +376,7 @@ export const projects: Project[] = [
     image: "linguisticlens.png",
     categories: ["research", "tools"],
     networks: ["llms_and_data", "visualization"],
+    collaborators: ["Minsuk Kahng", "Savvas Petridis"],
   },
   {
     name: "Know Your Data",
@@ -308,6 +385,7 @@ export const projects: Project[] = [
     image: "knowyourdata.png",
     categories: ["tools"],
     networks: ["llms_and_data", "visualization", "kyd"],
+    collaborators: [],
   },
   {
     name: "LLM Comparator",
@@ -321,6 +399,17 @@ export const projects: Project[] = [
     image: "llm_comp.png",
     categories: ["research", "tools"],
     networks: ["llms_and_data", "visualization"],
+    collaborators: [
+      "Minsuk Kahng",
+      "Ian Tenney",
+      "Mahima Pushkarna",
+      "Michael Xieyang Liu",
+      "James Wexler",
+      "Krystal Kallarackal",
+      "Minsuk Chang",
+      "Michael Terry",
+      "Lucas Dixon",
+    ],
   },
   {
     name: "Embedding projector",
@@ -337,6 +426,13 @@ export const projects: Project[] = [
       "interpretability",
       "embeddings",
     ],
+    collaborators: [
+      "Daniel Smilkov",
+      "Nikhil Thorat",
+      "Charles Nicholson",
+      "Fernanda B. Viégas",
+      "Martin Wattenberg",
+    ],
   },
   {
     name: "Automatic Histograms",
@@ -350,7 +446,8 @@ export const projects: Project[] = [
     ],
     image: "ah.png",
     categories: ["research", "tools"],
-    networks: ["llms_and_data", "visualization", "kyd"],
+    networks: ["llms_and_data", "visualization", "kyd", "embeddings"],
+    collaborators: ["Crystal Qian", "James Wexler", "Minsuk Kahng"],
   },
   {
     name: "Wordcraft writers workshop",
@@ -363,6 +460,14 @@ export const projects: Project[] = [
     image: "wordcraft.jpg",
     categories: ["research", "tools", "creative_work"],
     networks: ["experts_using_ai"],
+    collaborators: [
+      "Andy Coenen",
+      "Luke Davis",
+      "Daphne Ippolito",
+      "Ann Yuan",
+      "Ken Liu",
+      "Robin Sloan",
+    ],
   },
   {
     name: "Language interpretability tool",
@@ -374,6 +479,18 @@ export const projects: Project[] = [
     image: "lit.png",
     categories: ["research", "tools"],
     networks: ["interpretability"],
+    collaborators: [
+      "Ian Tenney",
+      "James Wexler",
+      "Jasmijn Bastings",
+      "Tolga Bolukbasi",
+      "Andy Coenen",
+      "Sebastian Gehrmann",
+      "Ellen Jiang",
+      "Mahima Pushkarna",
+      "Carey Radebaugh",
+      "Ann Yuan",
+    ],
   },
   {
     name: "Probing pretraining data",
@@ -387,6 +504,7 @@ export const projects: Project[] = [
     image: "probing.png",
     categories: ["research"],
     networks: ["llms_and_data", "interpretability", "kyd", "embeddings"],
+    collaborators: ["Gregory Yauney", "David Mimno"],
   },
   {
     name: "NNs and gestalt",
@@ -400,6 +518,12 @@ export const projects: Project[] = [
     image: "gestalt.png",
     categories: ["research"],
     networks: ["interpretability"],
+    collaborators: [
+      "Been Kim",
+      "Martin Wattenberg",
+      "Samy Bengio",
+      "Michael C. Mozer",
+    ],
   },
   {
     name: "Moodboard search",
@@ -413,6 +537,15 @@ export const projects: Project[] = [
     image: "cavcam.png",
     categories: ["creative_work"],
     networks: ["embeddings", "experts_using_ai"],
+    collaborators: [
+      "Ben Pawle",
+      "Joe Rickerby",
+      "Michael Colville",
+      "Been Kim",
+      "Alice Moloney",
+      "Alison Lentz",
+      "Eva Kozanecka",
+    ],
   },
   {
     name: "Reverse rorschach",
@@ -426,6 +559,7 @@ export const projects: Project[] = [
     image: "rorsch.png",
     categories: ["creative_work"],
     networks: ["experts_using_ai"],
+    collaborators: ["Shahryar Nashat", "Sylvia Kouvali"],
   },
   {
     name: "SMILY: HITL tool for pathologists",
@@ -440,6 +574,21 @@ export const projects: Project[] = [
     image: "smily.png",
     categories: ["research", "tools"],
     networks: ["experts_using_ai", "embeddings"],
+    collaborators: [
+      "Narayan Hegde",
+      "Jason D. Hipp",
+      "Yun Liu",
+      "Michael E. Buck",
+      "Daniel Smilkov",
+      "Michael Terry",
+      "Carrie J. Cai",
+      "Mahul B. Amin",
+      "Craig H. Mermel",
+      "Phil Q. Nelson",
+      "Lily H. Peng",
+      "Greg S. Corrado",
+      "Martin C. Stumpe",
+    ],
   },
   {
     name: "Superlative Instruments",
@@ -449,6 +598,7 @@ export const projects: Project[] = [
     image: "superlative.png",
     categories: ["creative_work"],
     networks: [],
+    collaborators: [],
   },
   {
     name: "Evaluating attribution for graph neural networks",
@@ -463,6 +613,16 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     categories: ["research"],
     networks: ["interpretability"],
+    collaborators: [
+      "Benjamin Sanchez-Lengeling",
+      "Jennifer Wei",
+      "Brian Lee",
+      "Peter Wang",
+      "Wesley Qian",
+      "Kevin McCloskey",
+      "Lucy Colwell",
+      "Alexander Wiltschko",
+    ],
   },
   {
     name: "An interpretability illusion for BERT",
@@ -472,6 +632,14 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     categories: ["research"],
     networks: ["interpretability", "embeddings"],
+    collaborators: [
+      "Tolga Bolukbasi",
+      "Adam Pearce",
+      "Ann Yuan",
+      "Andy Coenen",
+      "Fernanda B. Viégas",
+      "Martin Wattenberg",
+    ],
   },
   {
     name: "Who's asking? User personas and the mechanics of latent misalignment",
@@ -480,6 +648,13 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     categories: ["research"],
     networks: ["interpretability", "embeddings"],
+    collaborators: [
+      "Asma Ghandeharioun",
+      "Ann Yuan",
+      "Marius Guerard",
+      "Michael A. Lepori",
+      "Lucas Dixon",
+    ],
   },
   {
     name: "Understanding the dataset practitioners behind large language model development",
@@ -489,6 +664,7 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     categories: ["research"],
     networks: ["llms_and_data"],
+    collaborators: ["Crystal Qian", "Minsuk Kahng"],
   },
   {
     name: "Data similarity is not enough to explain language model performance",
@@ -500,6 +676,7 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     categories: ["research"],
     networks: ["llms_and_data", "interpretability", "embeddings", "kyd"],
+    collaborators: ["Gregory Yauney", "David Mimno"],
   },
   {
     name: "LLM adoption in industry data curation practices",
@@ -515,6 +692,17 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     categories: ["research"],
     networks: ["llms_and_data", "experts_using_ai", "kyd"],
+    collaborators: [
+      "Crystal Qian",
+      "Michael Xieyang Liu",
+      "Grady Simon",
+      "Nada Hussein",
+      "Nathan Clement",
+      "James Wexler",
+      "Carrie J. Cai",
+      "Michael Terry",
+      "Minsuk Kahng",
+    ],
   },
   {
     name: "SoUnD: analyzing social representation in unstructured data",
@@ -530,6 +718,12 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     categories: ["research"],
     networks: ["llms_and_data", "kyd"],
+    collaborators: [
+      "Mark Díaz",
+      "Sunipa Dev",
+      "Emily Denton",
+      "Vinodkumar Prabhakaran",
+    ],
   },
   {
     name: "RDoFlow: automatically assessing under-specified statistical analyses in HCI",
@@ -541,6 +735,15 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     categories: ["research"],
     networks: [],
+    collaborators: [
+      "Madeleine Grunde-McLaughlin",
+      "Weixuan Liu",
+      "Ria Patil",
+      "Nino Migineishvili",
+      "Ranjay Krishna",
+      "Daniel S. Weld",
+      "Jeffrey Heer",
+    ],
   },
   {
     name: "The case for a single model that can both generate continuations and fill-in-the-blank",
@@ -555,6 +758,13 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     categories: ["research"],
     networks: ["llms_and_data"],
+    collaborators: [
+      "Daphne Ippolito",
+      "Liam Dugan",
+      "Ann Yuan",
+      "Andy Coenen",
+      "Chris Callison-Burch",
+    ],
   },
   {
     name: "Solar panel tracking and control (reinforcement learning)",
@@ -574,6 +784,12 @@ export const projects: Project[] = [
     hide_in_main_list: true,
     categories: ["research"],
     networks: ["experts_using_ai"],
+    collaborators: [
+      "David Abel",
+      "Edward Williams",
+      "Stephen Brawner",
+      "Michael L. Littman",
+    ],
   },
   {
     name: "Toymaker",
@@ -582,6 +798,7 @@ export const projects: Project[] = [
     image: "toymaker.png",
     categories: ["creative_work"],
     networks: [],
+    collaborators: [],
   },
 ];
 

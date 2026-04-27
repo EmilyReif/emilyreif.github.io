@@ -113,6 +113,27 @@ index-component {
   padding-bottom: 40px;
   padding-top: 10px;
 }
+
+.project-collaborators {
+  margin-top: 0.75rem;
+  line-height: 1.45;
+}
+
+.project-collaborators-label {
+  display: block;
+  margin-bottom: 0.2em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #888;
+  font-size: 0.65em;
+}
+
+.project-collaborators-names {
+  color: #777;
+  font-size: 0.95em;
+  letter-spacing: 0.01em;
+}
 .img-holder {
   flex: 0 0 400px;
   height: 150px;

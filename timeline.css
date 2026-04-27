@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+/* Custom element defaults to inline; full width ensures the scroll region measures correctly. */
+timeline-component {
+  display: block;
+  width: 100%;
+}
 
 .timeline-title-wrap {
   max-width: 600px;

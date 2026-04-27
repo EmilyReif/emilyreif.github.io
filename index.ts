@@ -7,6 +7,19 @@ import { customElement } from 'lit/decorators';
 import { repeat } from 'lit/directives/repeat';
 import { mainProjects, Project } from './projects';
 
+const PROJECT_COLLABORATORS_SHOWN = 16;
+
+function formatProjectCollaborators(names: readonly string[]): string {
+  if (names.length === 0) {
+    return '';
+  }
+  if (names.length <= PROJECT_COLLABORATORS_SHOWN) {
+    return names.join(', ');
+  }
+  const head = names.slice(0, PROJECT_COLLABORATORS_SHOWN);
+  return `${head.join(', ')} — and ${names.length - PROJECT_COLLABORATORS_SHOWN} more (full author list on the paper)`;
+}
+
 /** Set to false to hide the timeline section and its nav link. */
 const SHOW_TIMELINE = true;
 
@@ -118,6 +131,14 @@ export class TreesComponent extends LitElement {
     const links = project.links.map(
       (link) => html`<div>${this.link(link.name, link.link)}</div>`
     );
+    const collab = project.collaborators.length
+      ? html`<div class='project-collaborators'>
+        <div class='project-collaborators-label font-sm'>With</div>
+        <div class='project-collaborators-names'>${formatProjectCollaborators(
+          project.collaborators
+        )}</div>
+      </div>`
+      : null;
     return html`
     <div class='title'>${project.name}</div>
     <div class='project'>
@@ -125,6 +146,7 @@ export class TreesComponent extends LitElement {
 
       <div class='info font-sm'>
         <div>${project.description}</div>
+        ${collab}
         <div class='project-links'>
           ${links}
         </div>
