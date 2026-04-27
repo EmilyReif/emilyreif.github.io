@@ -2,6 +2,7 @@ import './timeline.css';
 
 import { LitElement, html, svg } from 'lit';
 import { customElement, state } from 'lit/decorators';
+import { repeat } from 'lit/directives/repeat';
 import {
   Project,
   ProjectCategory,
@@ -60,6 +61,7 @@ const TIMELINE_TOP_LABEL_Y = 16;
  * like 140 rejects every "up" placement in that case, so all labels pile up below).
  */
 const PERSISTENT_LABEL_MIN_Y = TIMELINE_TOP_LABEL_Y + 26;
+
 /** Y of the research lane; lower = whole project-lane stack shifts down in the SVG. */
 const TIMELINE_LANE_TOP = 150;
 const TIMELINE_LANE_SPACING = 26;
@@ -256,6 +258,41 @@ function blendCategoryColor(categories: ProjectCategory[]): string {
 function darkenColor(hexColor: string, factor = 0.7): string {
   const [r, g, b] = hexToRgb(hexColor);
   return rgbToHex([r * factor, g * factor, b * factor]);
+}
+
+/**
+ * feColorMatrix values (type="matrix") that map the image to Rec. 709 luma, then
+ * multiply by the dot color — luminance in grayscale, but only the category hue.
+ */
+function feColorMatrixLumaTintToDotColor(dotHex: string): string {
+  const [R, G, B] = hexToRgb(dotHex);
+  const t = { r: R / 255, g: G / 255, b: B / 255 };
+  const wr = 0.2126;
+  const wg = 0.7152;
+  const wb = 0.0722;
+  const rows = [
+    wr * t.r,
+    wg * t.r,
+    wb * t.r,
+    0,
+    0,
+    wr * t.g,
+    wg * t.g,
+    wb * t.g,
+    0,
+    0,
+    wr * t.b,
+    wg * t.b,
+    wb * t.b,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+  ];
+  return rows.map((n) => n.toFixed(5)).join(' ');
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -1032,6 +1069,34 @@ export class TimelineComponent extends LitElement {
                 fill='url(#area-edge-fade)'
               ></rect>
             </mask>
+            ${timelineItemsByDotSize.map(
+              (item, index) =>
+                item.project.image
+                  ? svg`
+                <filter
+                  id='timeline-dot-duotone-${index}'
+                  x='-25%'
+                  y='-25%'
+                  width='150%'
+                  height='150%'
+                  color-interpolation-filters='sRGB'
+                >
+                  <feColorMatrix
+                    in='SourceGraphic'
+                    type='matrix'
+                    values=${feColorMatrixLumaTintToDotColor(item.dotColor)}
+                  ></feColorMatrix>
+                </filter>
+                <clipPath id='timeline-dot-clip-${index}'>
+                  <circle
+                    cx='0'
+                    cy='0'
+                    r=${this.importanceRadiusForItem(item)}
+                  ></circle>
+                </clipPath>
+              `
+                  : null
+            )}
           </defs>
 
           <rect x='0' y='0' width='${this.timelineWidth}' height='${TIMELINE_HEIGHT}' fill='#ffffff'></rect>
@@ -1061,9 +1126,9 @@ export class TimelineComponent extends LitElement {
             (year) => svg`
               <line
                 x1=${this.xForYear(year)}
-                y1=${areaBottom + 30}
+                y1=${areaTop}
                 x2=${this.xForYear(year)}
-                y2=${TIMELINE_LANE_TOP + (LANE_ORDER.length - 1) * TIMELINE_LANE_SPACING + 50}
+                y2=${areaBottom}
                 stroke='#1a1a1a'
                 stroke-opacity='0.05'
                 stroke-width='1'
@@ -1196,8 +1261,20 @@ export class TimelineComponent extends LitElement {
             `
           )}
 
-          ${timelineItemsByDotSize.map(
-            (item) => svg`
+          ${repeat(
+            timelineItemsByDotSize,
+            (item) => item.project.name,
+            (item, index) => {
+              const r = this.importanceRadiusForItem(item);
+              const dotGroupOpacity = (() => {
+                const base =
+                  item.project.name === this.hoveredProjectName
+                    ? Math.min(1, this.itemOpacity(item) + 0.32)
+                    : this.itemOpacity(item);
+                return base * this.networkHighlightFactor(item.project);
+              })();
+              const hasImage = Boolean(item.project.image);
+              return svg`
               <g
                 class='timeline-dot-group'
                 transform='translate(${item.x} ${item.laneY})'
@@ -1217,28 +1294,39 @@ export class TimelineComponent extends LitElement {
                 <g
                   class='timeline-dot-scale'
                   transform='scale(${this.scaleForItem(item, timelineItems)})'
+                  opacity=${dotGroupOpacity}
                 >
+                  ${hasImage
+                    ? svg`
+                  <g clip-path='url(#timeline-dot-clip-${index})'>
+                    <image
+                      href='./images/${item.project.image!}'
+                      x=${-r}
+                      y=${-r}
+                      width=${2 * r}
+                      height=${2 * r}
+                      preserveAspectRatio='xMidYMid slice'
+                      filter='url(#timeline-dot-duotone-${index})'
+                    ></image>
+                  </g>
+                `
+                    : svg`
                   <circle
                     class='timeline-dot'
                     cx='0'
                     cy='0'
-                    r=${this.importanceRadiusForItem(item)}
+                    r=${r}
                     fill=${item.dotColor}
-                    fill-opacity=${(() => {
-                      const base =
-                        item.project.name === this.hoveredProjectName
-                          ? Math.min(1, this.itemOpacity(item) + 0.32)
-                          : this.itemOpacity(item);
-                      return base * this.networkHighlightFactor(item.project);
-                    })()}
+                    fill-opacity='1'
                     stroke='none'
                     stroke-width='0'
-                  >
-                    <title>${item.project.name}</title>
-                  </circle>
+                  ></circle>
+                `}
+                  <title>${item.project.name}</title>
                 </g>
               </g>
-            `
+            `;
+            }
           )}
 
           ${persistentLabels.map((label) => {
