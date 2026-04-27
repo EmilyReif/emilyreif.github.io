@@ -57,6 +57,21 @@ type Link = {
   name: string;
   link: string;
 };
+
+/** Extra timeline-only rows for one project (main project cards stay a single entry). */
+export type ProjectTimelineVariant = {
+  /** Stable id for hover/highlight (unique across all timeline items). */
+  key: string;
+  /** Text on the timeline connector labels (may be shorter than the card title). */
+  labelTitle: string;
+  cardTitle: string;
+  description: string;
+  /** Index into `project.links` for this row’s paper URL and date inference. */
+  linkIndex: number;
+  /** `PROJECT_TIMELINE_METADATA` entry for citation dot sizing. */
+  timelineMetaKey: string;
+};
+
 export type Project = {
   name: string;
   description: string | TemplateResult;
@@ -71,6 +86,11 @@ export type Project = {
   networks: ProjectNetwork[];
   /** When true, excluded from the main Projects list (still in data for exports / tooling). */
   hide_in_main_list?: boolean;
+  /**
+   * When set, the timeline renders one dot/label per variant instead of one for the
+   * project; the projects list and card copy stay unchanged.
+   */
+  timelineVariants?: ProjectTimelineVariant[];
 };
 
 export type ProjectTimelineMetadata = {
@@ -88,7 +108,7 @@ export const PROJECT_TIMELINE_METADATA: Record<string, ProjectTimelineMetadata> 
   "language interpretability tool": { year: 2020, month: 11, citations: 420 },
   "a gentle introduction to graph neural networks": { year: 2021, month: 9, citations: 520 },
   "wordcraft story writing with large language models": { year: 2022, citations: 180, aliases: ["wordcraft writers workshop"] },
-  "a recipe for arbitrary text style transfer with large language models": { year: 2022, citations: 110, aliases: ["a recipe for arbitrary text style transfer with llms"] },
+  "a recipe for arbitrary text style transfer with large language models": { year: 2021, month: 11, citations: 110, aliases: ["a recipe for arbitrary text style transfer with llms"] },
   "a pretrainer s guide to training data measuring the effects of data age domain coverage quality toxicity": { year: 2024, month: 7, citations: 65, aliases: ["a pretrainer s guide to training data"] },
   "llm comparator interactive analysis of side by side evaluation of large language models": { year: 2025, month: 1, citations: 55, aliases: ["llm comparator"] },
   "automatic histograms leveraging language models for text dataset exploration": { year: 2024, month: 5, citations: 18, aliases: ["automatic histograms"] },
@@ -164,6 +184,24 @@ export const projects: Project[] = [
     image: "topics.png",
     categories: ["research"],
     networks: ["llms_and_data", "kyd"],
+    timelineVariants: [
+      {
+        key: "palm-rai-data",
+        labelTitle: "PaLM RAI data",
+        cardTitle: "PaLM: RAI data analysis",
+        description: "Responsible AI analysis on PaLM pre-training data",
+        linkIndex: 0,
+        timelineMetaKey: "palm scaling language modeling with pathways",
+      },
+      {
+        key: "palm2-rai-data",
+        labelTitle: "PaLM 2 RAI data",
+        cardTitle: "PaLM 2: RAI data analysis",
+        description: "Responsible AI analysis on PaLM 2 pre-training data",
+        linkIndex: 1,
+        timelineMetaKey: "palm 2 technical report",
+      },
+    ],
   },
   {
     name: "A pretrainer's guide to training data",

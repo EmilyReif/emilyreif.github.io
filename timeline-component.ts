@@ -1,6 +1,6 @@
 import './timeline.css';
 
-import { LitElement, html, svg } from 'lit';
+import { LitElement, html, svg, TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators';
 import { repeat } from 'lit/directives/repeat';
 import {
@@ -27,6 +27,12 @@ type TimelineCategoryLane = 'research' | 'tools' | 'creative_work';
 
 type TimelineItem = {
   project: Project;
+  /** Hover/identity; equals project.name unless `project.timelineVariants` split the row. */
+  instanceKey: string;
+  labelTitle: string;
+  cardTitle: string;
+  cardDescription: string | TemplateResult;
+  preferredLink: string | undefined;
   decimalYear: number;
   isPublication: boolean;
   citationCount: number;
@@ -159,6 +165,18 @@ function decimalYear(year: number, month?: number): number {
   return year + (month - 1) / 12;
 }
 
+function preferredProjectLink(project: Project): string | undefined {
+  const paperLike = project.links.find((link) => {
+    const lowerName = link.name.toLowerCase();
+    return (
+      lowerName.includes('paper') ||
+      lowerName.includes('publication') ||
+      lowerName.includes('venue')
+    );
+  });
+  return paperLike?.link ?? project.links[0]?.link;
+}
+
 function inferProjectDecimalYear(project: Project): number {
   const paperFirstLinks = [
     ...project.links.filter((link) => {
@@ -196,6 +214,24 @@ function inferProjectDecimalYear(project: Project): number {
     return decimalYear(Number(yearFromName[0]));
   }
   return decimalYear(2024);
+}
+
+function decimalYearFromProjectLink(
+  project: Project,
+  linkIndex: number
+): number {
+  const link = project.links[linkIndex];
+  if (link) {
+    const fromLink = inferYearMonthFromLink(link.link);
+    if (fromLink) {
+      return decimalYear(fromLink.year, fromLink.month);
+    }
+    const y = inferYearFromLink(link.link);
+    if (y !== undefined) {
+      return decimalYear(y);
+    }
+  }
+  return inferProjectDecimalYear(project);
 }
 
 function inferPublicationStatus(project: Project): boolean {
@@ -308,7 +344,7 @@ export class TimelineComponent extends LitElement {
   private timelineWidth = 1500;
 
   @state()
-  private hoveredProjectName: string | null = null;
+  private hoveredInstanceKey: string | null = null;
 
   /** When set, timeline items not in this network are dimmed. */
   @state()
@@ -348,8 +384,8 @@ export class TimelineComponent extends LitElement {
   }
 
   override updated(changed: Map<string, unknown>) {
-    if (changed.has('hoveredProjectName')) {
-      if (this.hoveredProjectName) {
+    if (changed.has('hoveredInstanceKey')) {
+      if (this.hoveredInstanceKey) {
         const card = this.querySelector(
           '.timeline-hover-card.hovered'
         ) as HTMLElement | null;
@@ -401,19 +437,6 @@ export class TimelineComponent extends LitElement {
     }
     return this.publicationRadiusForItem(item, items) / Math.max(baseRadius, 0.1);
   }
-
-  private preferredProjectLink(project: Project): string | undefined {
-    const paperLike = project.links.find((link) => {
-      const lowerName = link.name.toLowerCase();
-      return (
-        lowerName.includes('paper') ||
-        lowerName.includes('publication') ||
-        lowerName.includes('venue')
-      );
-    });
-    return paperLike?.link ?? project.links[0]?.link;
-  }
-
 
   private shortPersistentLabelTitle(title: string): string {
     if (title.length > 58 && title.includes(':')) {
@@ -503,7 +526,7 @@ export class TimelineComponent extends LitElement {
     const occupiedLines: Array<{ x: number; y1: number; y2: number }> = [];
 
     for (const item of items) {
-      const title = this.shortPersistentLabelTitle(item.project.name);
+      const title = this.shortPersistentLabelTitle(item.labelTitle);
       const lines = this.wrapTextByWords(title, maxCharsPerLine, maxLines);
       const longestLine = lines.reduce(
         (longest, line) => Math.max(longest, line.length),
@@ -521,7 +544,7 @@ export class TimelineComponent extends LitElement {
       const initialDir: 'up' | 'down' =
         item.laneY >= downLabelThreshold ? 'down' : 'up';
       const initialSide: 'left' | 'right' = this.hashedBit(
-        'h:' + item.project.name
+        'h:' + item.instanceKey
       )
         ? 'right'
         : 'left';
@@ -795,19 +818,8 @@ export class TimelineComponent extends LitElement {
     }
     const totalVisible = rank;
 
-    const items: TimelineItem[] = projects.map((project) => {
-      const scholarMetadata = getScholarMetadata(project.name);
-      const decimalYear = clamp(
-        inferProjectDecimalYear(project),
-        DATA_MIN_YEAR + 0.02,
-        DATA_MAX_YEAR - 0.02
-      );
-      const isPublication = inferPublicationStatus(project);
-      const citationCount = scholarMetadata?.citations ?? 10;
-      const dotColor = blendCategoryColor(project.categories);
-      const strokeColor = darkenColor(dotColor);
-      const laneY = laneYForCategories(project.categories);
-      const x = this.xForYear(decimalYear);
+    const items: TimelineItem[] = [];
+    for (const project of projects) {
       const hiddenFromMain = Boolean(project.hide_in_main_list);
       const rankIndex = visibleRanks.get(project.name);
       const preferenceFraction =
@@ -816,19 +828,85 @@ export class TimelineComponent extends LitElement {
           : totalVisible <= 1
             ? 1
             : 1 - rankIndex / (totalVisible - 1);
-      return {
-        project,
-        decimalYear,
-        isPublication,
-        citationCount,
-        dotColor,
-        strokeColor,
-        laneY,
-        x,
-        hiddenFromMain,
-        preferenceFraction,
+      const dotColor = blendCategoryColor(project.categories);
+      const strokeColor = darkenColor(dotColor);
+      const laneY = laneYForCategories(project.categories);
+      const isPublication = inferPublicationStatus(project);
+
+      const baseItem = (
+        decimalY: number,
+        instanceKey: string,
+        labelTitle: string,
+        cardTitle: string,
+        cardDescription: string | TemplateResult,
+        preferredLink: string | undefined,
+        citationCount: number
+      ): TimelineItem => {
+        const clampedY = clamp(
+          decimalY,
+          DATA_MIN_YEAR + 0.02,
+          DATA_MAX_YEAR - 0.02
+        );
+        return {
+          project,
+          instanceKey,
+          labelTitle,
+          cardTitle,
+          cardDescription,
+          preferredLink,
+          decimalYear: clampedY,
+          isPublication,
+          citationCount,
+          dotColor,
+          strokeColor,
+          laneY,
+          x: this.xForYear(clampedY),
+          hiddenFromMain,
+          preferenceFraction,
+        };
       };
-    });
+
+      const variants = project.timelineVariants;
+      if (variants && variants.length > 0) {
+        for (const variant of variants) {
+          const decimalY = decimalYearFromProjectLink(
+            project,
+            variant.linkIndex
+          );
+          const meta = PROJECT_TIMELINE_METADATA[variant.timelineMetaKey];
+          const citationCount = meta ? meta.citations : 10;
+          const linkUrl = project.links[variant.linkIndex]
+            ? project.links[variant.linkIndex].link
+            : undefined;
+          items.push(
+            baseItem(
+              decimalY,
+              variant.key,
+              variant.labelTitle,
+              variant.cardTitle,
+              variant.description,
+              linkUrl,
+              citationCount
+            )
+          );
+        }
+        continue;
+      }
+
+      const scholarMetadata = getScholarMetadata(project.name);
+      const decimalY = inferProjectDecimalYear(project);
+      items.push(
+        baseItem(
+          decimalY,
+          project.name,
+          project.name,
+          project.name,
+          project.description,
+          preferredProjectLink(project),
+          scholarMetadata ? scholarMetadata.citations : 10
+        )
+      );
+    }
 
     // Jitter items that share (nearly) the same position so their persistent
     // label lines don't sit exactly on top of each other.
@@ -850,7 +928,7 @@ export class TimelineComponent extends LitElement {
     Array.from(buckets.values()).forEach((bucket) => {
       if (bucket.length < 2) return;
       bucket.sort((a, b) =>
-        a.project.name.localeCompare(b.project.name)
+        a.instanceKey.localeCompare(b.instanceKey)
       );
       const mid = (bucket.length - 1) / 2;
       bucket.forEach((item, index) => {
@@ -928,7 +1006,7 @@ export class TimelineComponent extends LitElement {
       if (rb !== ra) {
         return rb - ra;
       }
-      return a.project.name.localeCompare(b.project.name);
+      return a.instanceKey.localeCompare(b.instanceKey);
     });
     const persistentLabels = this.layoutPersistentLabels(timelineItems);
     const areaTop = 20;
@@ -1263,12 +1341,12 @@ export class TimelineComponent extends LitElement {
 
           ${repeat(
             timelineItemsByDotSize,
-            (item) => item.project.name,
+            (item) => item.instanceKey,
             (item, index) => {
               const r = this.importanceRadiusForItem(item);
               const dotGroupOpacity = (() => {
                 const base =
-                  item.project.name === this.hoveredProjectName
+                  item.instanceKey === this.hoveredInstanceKey
                     ? Math.min(1, this.itemOpacity(item) + 0.32)
                     : this.itemOpacity(item);
                 return base * this.networkHighlightFactor(item.project);
@@ -1279,13 +1357,13 @@ export class TimelineComponent extends LitElement {
                 class='timeline-dot-group'
                 transform='translate(${item.x} ${item.laneY})'
                 @mouseenter=${() => {
-                  this.hoveredProjectName = item.project.name;
+                  this.hoveredInstanceKey = item.instanceKey;
                 }}
                 @mouseleave=${() => {
-                  this.hoveredProjectName = null;
+                  this.hoveredInstanceKey = null;
                 }}
                 @click=${() => {
-                  const url = this.preferredProjectLink(item.project);
+                  const url = item.preferredLink;
                   if (url) {
                     window.open(url, '_blank', 'noopener');
                   }
@@ -1322,7 +1400,7 @@ export class TimelineComponent extends LitElement {
                     stroke-width='0'
                   ></circle>
                 `}
-                  <title>${item.project.name}</title>
+                  <title>${item.labelTitle}</title>
                 </g>
               </g>
             `;
@@ -1336,7 +1414,7 @@ export class TimelineComponent extends LitElement {
             const cx = label.item.x;
             const cy = label.item.laneY;
             const isHovered =
-              label.item.project.name === this.hoveredProjectName;
+              label.item.instanceKey === this.hoveredInstanceKey;
             const compactBottom = label.y + label.height;
             const expandedBottom = isHovered
               ? Math.max(
@@ -1422,7 +1500,7 @@ export class TimelineComponent extends LitElement {
             const textAnchor = label.side === 'right' ? 'start' : 'end';
             const textX = label.side === 'right' ? label.x + 3 : label.x - 3;
             const isHovered =
-              label.item.project.name === this.hoveredProjectName;
+              label.item.instanceKey === this.hoveredInstanceKey;
             const groupClass = isHovered
               ? 'timeline-persistent-label hovered'
               : 'timeline-persistent-label';
@@ -1432,13 +1510,13 @@ export class TimelineComponent extends LitElement {
               class=${groupClass}
               opacity=${labelNetDim}
               @mouseenter=${() => {
-                this.hoveredProjectName = label.item.project.name;
+                this.hoveredInstanceKey = label.item.instanceKey;
               }}
               @mouseleave=${() => {
-                this.hoveredProjectName = null;
+                this.hoveredInstanceKey = null;
               }}
               @click=${() => {
-                const url = this.preferredProjectLink(label.item.project);
+                const url = label.item.preferredLink;
                 if (url) {
                   window.open(url, '_blank', 'noopener');
                 }
@@ -1533,7 +1611,7 @@ export class TimelineComponent extends LitElement {
         </div>
         ${persistentLabels.map((label) => {
           const isHovered =
-            label.item.project.name === this.hoveredProjectName;
+            label.item.instanceKey === this.hoveredInstanceKey;
           const kind = label.item.isPublication ? 'paper' : 'project';
           const venue = label.item.project.venue;
           const isRight = label.side === 'right';
@@ -1574,13 +1652,13 @@ export class TimelineComponent extends LitElement {
               }`}
               style=${positionParts.join(';')}
               @mouseenter=${() => {
-                this.hoveredProjectName = label.item.project.name;
+                this.hoveredInstanceKey = label.item.instanceKey;
               }}
               @mouseleave=${() => {
-                this.hoveredProjectName = null;
+                this.hoveredInstanceKey = null;
               }}
               @click=${() => {
-                const url = this.preferredProjectLink(label.item.project);
+                const url = label.item.preferredLink;
                 if (url) {
                   window.open(url, '_blank', 'noopener');
                 }
@@ -1588,7 +1666,7 @@ export class TimelineComponent extends LitElement {
             >
               <div class='timeline-hover-card-body'>
                 <div class='timeline-hover-card-title'>
-                  ${label.item.project.name}
+                  ${label.item.cardTitle}
                 </div>
                 <div class='timeline-hover-card-meta'>
                   <span class=${`timeline-hover-card-chip ${kind}`}
@@ -1601,7 +1679,7 @@ export class TimelineComponent extends LitElement {
                     : null}
                 </div>
                 <div class='timeline-hover-card-description'>
-                  ${label.item.project.description}
+                  ${label.item.cardDescription}
                 </div>
               </div>
             </div>
